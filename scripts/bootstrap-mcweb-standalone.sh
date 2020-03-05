@@ -45,7 +45,7 @@ echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap
 echo pip install uwsgi  >> mcvenv_finishup
 sudo -H -u www-data  bash mcvenv_finishup
 
-sudo -H -u www-data  git clone https://github.com/McStasMcXtrace/McWeb
+sudo -H -u www-data  git clone https://github.com/rasmunk/McWeb
 
 # Pick and pull the STABLE branch
 cd McWeb
