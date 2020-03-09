@@ -50,6 +50,7 @@ RUN apt-get -y install php-xmlrpc
 RUN apt-get -y install php-soap
 RUN apt-get -y install php-intl
 RUN apt-get -y install php-ldap
+RUN apt-get -y install build-essential
 
 RUN apt-get install -y --fix-missing openssh-server
 
