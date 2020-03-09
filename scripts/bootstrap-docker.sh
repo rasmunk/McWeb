@@ -1,6 +1,26 @@
 #!/bin/sh
 
 STARTDIR=`pwd`
+
+# Defaults
+# Django password 
+DJANGO="Passw0rd123"
+# Number of MPI cores
+MPI=1
+
+print_usage() {
+	print "-d for new DJANGO Password"
+}
+
+while getopts 'hd:m:' flag; do
+	case ${flag} in
+		d) DJANGO=${OPTARG} ;;
+		m) MPI=${OPTARG} ;;
+		h) print_usage
+		  exit 1 ;;
+	esac
+done
+
 # Basic infrastructure
 apt-get -y
 apt-get -y install net-tools iproute2 sudo openssh-server xbase-clients zip unzip cron curl lsof
@@ -62,12 +82,15 @@ SERVERNAME=`hostname`
 export IPADDR
 export SERVERNAME
 
-echo -n Please enter your Django upload password and press [ENTER]:
-read UPLOADPW
+
+# echo -n Please enter your Django upload password and press [ENTER]:
+# read UPLOADPW
+UPLOADPW=$DJANGO
 export UPLOADPW
 
-echo -n Please enter desired simulator MPI cores pr. sim job press [ENTER]:
-read MPICORES
+# echo -n Please enter desired simulator MPI cores pr. sim job press [ENTER]:
+# read MPICORES
+MPICORES=$MPI
 export MPICORES
 
 # Allow www-data to restart uwsgi
@@ -103,8 +126,9 @@ echo python manage.py migrate >> McWeb_finishup
 echo python manage.py collect_instr >>  McWeb_finishup
 echo echo Please assist Django in creation of your djangoadmin user: >>  McWeb_finishup
 echo python manage.py createsuperuser --username=djangoadmin --email=admin@localhost >>  McWeb_finishup >>  McWeb_finishup
-echo echo -n Please enter your Django admin user pass again and press \[ENTER\]: >>  McWeb_finishup
-echo read DJANGO_PASS >>  McWeb_finishup
+# echo echo -n Please enter your Django admin user pass again and press \[ENTER\]: >>  McWeb_finishup
+# echo read DJANGO_PASS >>  McWeb_finishup
+echo $DJANGO >> McWeb_finishup
 echo echo >>  McWeb_finishup
 echo echo Essential setup done, here is a summary: >>  McWeb_finishup
 echo echo >>  McWeb_finishup
@@ -122,4 +146,5 @@ sudo -H -u www-data  bash McWeb_finishup
 cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
 service nginx restart
 
-
+cd 
+echo 'script completed, possibly' >> feedback.txt
