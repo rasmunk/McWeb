@@ -2,12 +2,12 @@ FROM ubuntu:18.04
 
 # -- Configuration variables --
 # tzdata
-ENV region=Europe
-ENV city=Copenhagen
+ARG region=Europe
+ARG city=Copenhagen
 # Django 
-ENV DJANGO=Passw0rd123
+ARG DJANGO=Passw0rd123
 # MPI cores
-ENV MPI=1
+ARG MPI=1
 
 # Get required commands for script
 RUN apt update \
