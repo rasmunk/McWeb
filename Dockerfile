@@ -10,20 +10,48 @@ ARG DJANGO=Passw0rd123
 ARG MPI=1
 
 # Get required commands for script
-RUN apt update
-RUN apt install -y git
-RUN apt install -y net-tools
-RUN apt install -y iproute2
-RUN apt install -y sudo
-RUN apt install -y openssh-server
-RUN apt install -y xbase-clients
-RUN apt install -y zip
-RUN apt install -y unzip
-RUN apt install -y cron
-RUN apt install -y curl
-RUN apt install -y lsof
+RUN apt-get update
 
-RUN DEBIAN_FRONTEND=noninteractive apt install -y keyboard-configuration
+RUN apt-get install -y git
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
+
+RUN apt-get install -y net-tools
+RUN apt-get install -y iproute2
+RUN apt-get install -y sudo
+RUN apt-get install -y zip
+RUN apt-get install -y unzip
+RUN apt-get install -y cron
+RUN apt-get install -y curl
+RUN apt-get install -y lsof
+
+# Packages for bootstrapping an McWeb instance
+RUN apt-get -y install git
+RUN apt-get -y install libsasl2-dev
+RUN apt-get -y install python-dev
+RUN apt-get -y install libldap2-dev
+RUN apt-get -y install libssl-dev
+RUN apt-get -y install python-virtualenv
+RUN apt-get -y install makepasswd
+RUN apt-get -y install nginx
+RUN apt-get -y install php-fpm
+RUN apt-get -y install php-mysql
+RUN apt-get -y install php-xml
+RUN apt-get -y install php-curl
+RUN apt-get -y install php-zip
+RUN apt-get -y install php-gd
+RUN apt-get -y install php-mbstring
+RUN apt-get -y install php-xmlrpc
+RUN apt-get -y install php-soap
+RUN apt-get -y install php-intl
+RUN apt-get -y install php-ldap
+
+
+RUN apt-get install -y --fix-missing openssh-server
+
+# RUN apt-get install -y --fix-missing xbase-clients
+
+
 
 # Install and configure tzdata for bootstrap script
 RUN ln -fs /usr/share/zoneinfo/${region}/${city} /etc/localtime \

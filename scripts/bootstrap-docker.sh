@@ -46,9 +46,6 @@ cd $STARTDIR
 update-rc.d apache2 remove
 service apache2 stop
 
-# Packages for bootstrapping an McWeb instance
-apt-get -y install git libsasl2-dev python-dev libldap2-dev libssl-dev python-virtualenv makepasswd nginx php-fpm php-mysql php-xml php-curl php-zip php-gd php-mbstring php-xmlrpc php-soap php-intl php-ldap
-
 rm -rf /srv/mcweb
 mkdir /srv/mcweb
 sudo chown -R www-data:www-data /srv/mcweb /var/www/
@@ -124,7 +121,7 @@ echo echo Please assist Django in creation of your djangoadmin user: >>  McWeb_f
 echo python manage.py createsuperuser --username=djangoadmin --email=admin@localhost >>  McWeb_finishup >>  McWeb_finishup
 # echo echo -n Please enter your Django admin user pass again and press \[ENTER\]: >>  McWeb_finishup
 # echo read DJANGO_PASS >>  McWeb_finishup
-echo $DJANGO >> McWeb_finishup
+echo echo $DJANGO >> McWeb_finishup
 echo echo >>  McWeb_finishup
 echo echo Essential setup done, here is a summary: >>  McWeb_finishup
 echo echo >>  McWeb_finishup
