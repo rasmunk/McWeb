@@ -10,19 +10,18 @@ ARG DJANGO=Passw0rd123
 ARG MPI=1
 
 # Get required commands for script
-RUN apt update \
-    && apt install -y \
-    git \
-    net-tools \
-    iproute2 \
-    sudo \
-    openssh-server \
-    xbase-clients \
-    zip \
-    unzip \
-    cron \
-    curl \
-    lsof
+RUN apt update
+RUN apt install -y git
+RUN apt install -y net-tools
+RUN apt install -y iproute2
+RUN apt install -y sudo
+RUN apt install -y openssh-server
+RUN apt install -y xbase-clients
+RUN apt install -y zip
+RUN apt install -y unzip
+RUN apt install -y cron
+RUN apt install -y curl
+RUN apt install -y lsof
 
 RUN DEBIAN_FRONTEND=noninteractive apt install -y keyboard-configuration
 
@@ -36,4 +35,3 @@ RUN git clone https://github.com/rasmunk/McWeb.git
 # Run the McWeb setup script
 RUN cd McWeb/scripts/ \
 #    && ./bootstrap-docker.sh -d ${DJANGO} -m ${MPI}
-
