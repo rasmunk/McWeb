@@ -21,10 +21,6 @@ while getopts 'hd:m:' flag; do
 	esac
 done
 
-# Basic infrastructure
-apt-get -y
-apt-get -y install net-tools iproute2 sudo openssh-server xbase-clients zip unzip cron curl lsof
-
 # Add nonfree and contrib repo
 sed -i.bak s/main/main\ contrib\ non-free/g /etc/apt/sources.list
 apt-get update

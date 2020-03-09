@@ -11,8 +11,20 @@ ARG MPI=1
 
 # Get required commands for script
 RUN apt update \
-    && apt install -y git \
-    && DEBIAN_FRONTEND=noninteractive apt install -y keyboard-configuration
+    && apt install -y
+    git \
+    net-tools \
+    iproute2 \
+    sudo \
+    openssh-server \
+    xbase-clients \
+    zip \
+    unzip \
+    cron \
+    curl \
+    lsof
+
+RUN DEBIAN_FRONTEND=noninteractive apt install -y keyboard-configuration
 
 # Install and configure tzdata for bootstrap script
 RUN ln -fs /usr/share/zoneinfo/${region}/${city} /etc/localtime \
