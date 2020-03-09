@@ -5,9 +5,9 @@ FROM ubuntu:18.04
 ENV region=Europe
 ENV city=Copenhagen
 # Django 
-DJANGO=Passw0rd123
+ENV DJANGO=Passw0rd123
 # MPI cores
-MPI=1
+ENV MPI=1
 
 # Get required commands for script
 RUN apt update \
@@ -22,5 +22,5 @@ RUN git clone https://github.com/rasmunk/McWeb.git
 
 # Run the McWeb setup script
 RUN cd McWeb/scripts/ \
-#    && ./bootstrap-docker.sh -d $DJANGO -m $MPI
+#    && ./bootstrap-docker.sh -d ${DJANGO} -m ${MPI}
 
