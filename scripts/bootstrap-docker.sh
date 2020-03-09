@@ -118,7 +118,10 @@ echo cd McWeb/mcsimrunner/ >> McWeb_finishup
 echo python manage.py migrate >> McWeb_finishup
 echo python manage.py collect_instr >>  McWeb_finishup
 echo echo Please assist Django in creation of your djangoadmin user: >>  McWeb_finishup
-echo python manage.py createsuperuser --username=djangoadmin --password=$DJANGO --email=admin@localhost >>  McWeb_finishup >>  McWeb_finishup
+#echo python manage.py createsuperuser --username=djangoadmin --noinput --email=admin@localhost >>  McWeb_finishup >>  McWeb_finishup
+
+echo echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@myproject.com', 'password')" | python manage.py shell >>  McWeb_finishup
+
 # echo echo -n Please enter your Django admin user pass again and press \[ENTER\]: >>  McWeb_finishup
 # echo read DJANGO_PASS >>  McWeb_finishup
 echo echo $DJANGO >> McWeb_finishup

@@ -61,4 +61,4 @@ RUN git clone https://github.com/rasmunk/McWeb.git
 
 # Run the McWeb setup script
 RUN cd McWeb/scripts/ \
-#    && ./bootstrap-docker.sh -d ${DJANGO} -m ${MPI}
+#     && ./bootstrap-docker.sh -d ${DJANGO} -m ${MPI}
