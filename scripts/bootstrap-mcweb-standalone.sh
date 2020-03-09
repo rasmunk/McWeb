@@ -1,6 +1,7 @@
 #!/bin/sh
 
 STARTDIR=`pwd`
+
 # Basic infrastructure
 apt-get -y
 apt-get -y install net-tools iproute2 sudo openssh-server xbase-clients zip unzip cron curl lsof
@@ -46,7 +47,7 @@ echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap
 echo pip install uwsgi  >> mcvenv_finishup
 sudo -H -u www-data  bash mcvenv_finishup
 
-sudo -H -u www-data  git clone --single-branch --branch patch https://github.com/rasmunk/McWeb
+sudo -H -u www-data  git clone https://github.com/rasmunk/McWeb
 
 # Pick and pull the STABLE branch
 cd McWeb

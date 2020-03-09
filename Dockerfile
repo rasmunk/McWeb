@@ -15,7 +15,7 @@ RUN ln -fs /usr/share/zoneinfo/${region}/${city} /etc/localtime \
     && apt-get install -y tzdata
 
 # Download latest version of McWeb repo
-RUN git clone --single-branch --branch patch https://github.com/rasmunk/McWeb.git
+RUN git clone https://github.com/rasmunk/McWeb.git
 
 # Run the McWeb setup script
 RUN cd McWeb/scripts/ \
