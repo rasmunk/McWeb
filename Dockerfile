@@ -11,7 +11,7 @@ ARG MPI=1
 
 # Get required commands for script
 RUN apt update \
-    && apt install -y
+    && apt install -y \
     git \
     net-tools \
     iproute2 \
