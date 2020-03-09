@@ -1,5 +1,7 @@
 FROM ubuntu:18.04
 
+RUN set -e
+
 # -- Configuration variables --
 # tzdata
 ARG region=Europe
@@ -16,6 +18,10 @@ RUN apt-get install -y git
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
 
+# Install and configure tzdata for bootstrap script
+RUN ln -fs /usr/share/zoneinfo/${region}/${city} /etc/localtime \
+    && apt-get install -y tzdata
+
 RUN apt-get install -y net-tools
 RUN apt-get install -y iproute2
 RUN apt-get install -y sudo
@@ -26,7 +32,6 @@ RUN apt-get install -y curl
 RUN apt-get install -y lsof
 
 # Packages for bootstrapping an McWeb instance
-RUN apt-get -y install git
 RUN apt-get -y install libsasl2-dev
 RUN apt-get -y install python-dev
 RUN apt-get -y install libldap2-dev
@@ -46,16 +51,9 @@ RUN apt-get -y install php-soap
 RUN apt-get -y install php-intl
 RUN apt-get -y install php-ldap
 
-
 RUN apt-get install -y --fix-missing openssh-server
 
 # RUN apt-get install -y --fix-missing xbase-clients
-
-
-
-# Install and configure tzdata for bootstrap script
-RUN ln -fs /usr/share/zoneinfo/${region}/${city} /etc/localtime \
-    && apt-get install -y tzdata
 
 # Download latest version of McWeb repo
 RUN git clone https://github.com/rasmunk/McWeb.git
