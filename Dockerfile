@@ -1,7 +1,5 @@
 FROM ubuntu:18.04
 
-RUN set -e
-
 # -- Configuration variables --
 # tzdata
 ARG region=Europe
@@ -13,6 +11,13 @@ ARG MPI=1
 
 # Get required commands for script
 RUN apt-get update
+
+# RUN apt-get install -y build-essential
+# RUN apt-get install -y libssl-dev
+# RUN apt-get install -y libcurl4-gnutls-dev
+# RUN apt-get install -y libexpat1-dev
+# RUN apt-get install -y gettext
+# RUN apt-get install -y unzip
 
 RUN apt-get install -y git
 

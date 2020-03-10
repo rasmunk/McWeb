@@ -110,37 +110,36 @@ sudo -u www-data mkdir landing
 sed "s/@HOSTNAME@/${SERVERNAME}/g" McWeb/landingpage/landingpage.in.html > landing/index.html
 chown www-data:www-data landing/index.html
 
-cd /srv/mcweb
-sudo -u www-data mkdir McWeb/mcsimrunner/sim/intro-ns
-sudo -u www-data cp /usr/share/mcstas/2.6/examples/templateSANS.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/SANSsimple.instr
-sudo -u www-data cp mcvenv/bin/activate McWeb_finishup
-echo cd McWeb/mcsimrunner/ >> McWeb_finishup
-echo python manage.py migrate >> McWeb_finishup
-echo python manage.py collect_instr >>  McWeb_finishup
-echo echo Please assist Django in creation of your djangoadmin user: >>  McWeb_finishup
-#echo python manage.py createsuperuser --username=djangoadmin --noinput --email=admin@localhost >>  McWeb_finishup >>  McWeb_finishup
-
-echo echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@myproject.com', 'password')" | python manage.py shell >>  McWeb_finishup
-
-# echo echo -n Please enter your Django admin user pass again and press \[ENTER\]: >>  McWeb_finishup
-# echo read DJANGO_PASS >>  McWeb_finishup
-echo echo $DJANGO >> McWeb_finishup
-echo echo >>  McWeb_finishup
-echo echo Essential setup done, here is a summary: >>  McWeb_finishup
-echo echo >>  McWeb_finishup
-echo echo Django setup: >>  McWeb_finishup
-echo echo username: djangoadmin >>  McWeb_finishup
-echo echo password: \$DJANGO_PASS >>  McWeb_finishup
-echo echo email-adress: admin@localhost >>  McWeb_finishup
-echo echo Django upload pass: $UPLOADPASS >>  McWeb_finishup
-echo echo >>  McWeb_finishup 
-echo crontab /srv/mcweb/McWeb/scripts/cronjobs.txt >> McWeb_finishup 
-
-sudo -H -u www-data  bash McWeb_finishup
-/etc/init.d/uwsgi_mcweb start
-
-cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
-service nginx restart
-
-cd 
-echo 'script completed, possibly' >> feedback.txt
+#cd /srv/mcweb
+#sudo -u www-data mkdir McWeb/mcsimrunner/sim/intro-ns
+#sudo -u www-data cp /usr/share/mcstas/2.6/examples/templateSANS.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/SANSsimple.instr
+#sudo -u www-data cp mcvenv/bin/activate McWeb_finishup
+#echo cd McWeb/mcsimrunner/ >> McWeb_finishup
+#echo python manage.py migrate >> McWeb_finishup
+#echo python manage.py collect_instr >>  McWeb_finishup
+##echo python manage.py createsuperuser --username=djangoadmin --noinput --email=admin@localhost >>  McWeb_finishup >>  McWeb_finishup
+#
+#echo echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@myproject.com', 'password')" | python manage.py shell >>  McWeb_finishup
+#
+## echo echo -n Please enter your Django admin user pass again and press \[ENTER\]: >>  McWeb_finishup
+## echo read DJANGO_PASS >>  McWeb_finishup
+#echo echo $DJANGO >> McWeb_finishup
+#echo echo >>  McWeb_finishup
+#echo echo Essential setup done, here is a summary: >>  McWeb_finishup
+#echo echo >>  McWeb_finishup
+#echo echo Django setup: >>  McWeb_finishup
+#echo echo username: djangoadmin >>  McWeb_finishup
+#echo echo password: \$DJANGO_PASS >>  McWeb_finishup
+#echo echo email-adress: admin@localhost >>  McWeb_finishup
+#echo echo Django upload pass: $UPLOADPASS >>  McWeb_finishup
+#echo echo >>  McWeb_finishup
+#echo crontab /srv/mcweb/McWeb/scripts/cronjobs.txt >> McWeb_finishup
+#
+#sudo -H -u www-data  bash McWeb_finishup
+#/etc/init.d/uwsgi_mcweb start
+#
+#cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
+#service nginx restart
+#
+#cd
+#echo 'script completed, possibly' >> feedback.txt
