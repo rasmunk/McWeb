@@ -5,7 +5,9 @@ FROM ubuntu:18.04
 ARG region=Europe
 ARG city=Copenhagen
 # Django 
-ARG DJANGO=Passw0rd123
+ARG DJANGO_PASSWORD=Passw0rd123
+ARG DJANGO_USER=djangoadmin
+ARG DJANGO_EMAIL=admin@localhost
 # MPI cores
 ARG MPI=1
 
@@ -66,4 +68,4 @@ RUN git clone https://github.com/rasmunk/McWeb.git
 
 # Run the McWeb setup script
 RUN cd McWeb/scripts/ \
-#     && ./bootstrap-docker.sh -d ${DJANGO} -m ${MPI}
+    && ./bootstrap-docker.sh -u ${DJANGO_USER} -e ${DJANGO_EMAIL} -p ${DJANGO_PASSWORD} -m ${MPI}
