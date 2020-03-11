@@ -33,13 +33,17 @@ apt-get update
 
 # Add mccode repo
 cd /etc/apt/sources.list.d/
-rm mccode.list
 wget http://packages.mccode.org/debian/mccode.list
 apt-get update
 cd $STARTDIR
 
 # Base packages for McCode + MPI
-apt-get -y install mcstas-suite-perl mcstas-suite-python mcxtrace-suite-perl mcxtrace-suite-python openmpi-bin libopenmpi-dev
+apt-get -y install -y mcstas-suite-perl
+apt-get -y install -y mcstas-suite-python
+apt-get -y install -y mcxtrace-suite-perl
+apt-get -y install -y mcxtrace-suite-python
+apt-get -y install -y openmpi-bin
+apt-get -y install -y libopenmpi-dev
 # Ensure we use mcdoc.pl rather than python version
 ln -sf /usr/share/mcstas/2.6/bin/mcdoc.pl /usr/bin/mcdoc
 # Ensure mcplot.pl uses "proper" PGPLOT rather than GIZA
@@ -130,8 +134,8 @@ echo echo >>  McWeb_finishup
 echo echo Essential setup done, here is a summary: >>  McWeb_finishup
 echo echo >>  McWeb_finishup
 echo echo Django setup: >>  McWeb_finishup
-echo echo username: djangoadmin >>  McWeb_finishup
-echo echo password: \$DJANGO_PASS >>  McWeb_finishup
+echo echo username: $DJANGO_USER >>  McWeb_finishup
+echo echo password: $DJANGO_PASS >>  McWeb_finishup
 echo echo email-adress: admin@localhost >>  McWeb_finishup
 echo echo Django upload pass: $UPLOADPASS >>  McWeb_finishup
 echo echo >>  McWeb_finishup
