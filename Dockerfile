@@ -75,8 +75,7 @@ RUN apt-get update
 # Add mccode repo
 RUN cd /etc/apt/sources.list.d/ \
     && wget http://packages.mccode.org/debian/mccode.list \
-    && apt-get update \
-    && cd
+    && apt-get update
 
 # Base packages for McCode + MPI
 RUN apt-get -y install -y mcstas-suite-perl
@@ -92,16 +91,13 @@ RUN ln -sf /usr/share/mcstas/2.6/bin/mcdoc.pl /usr/bin/mcdoc
 # Ensure mcplot.pl uses "proper" PGPLOT rather than GIZA
 RUN cd /usr/lib/x86_64-linux-gnu \
     && sudo ln -sf ../libpgplot.so libpgplot.so.0 \
-    && sudo ln -sf ../libcpgplot.so libcpgplot.so.0 \
-    && cd
+    && sudo ln -sf ../libcpgplot.so libcpgplot.so.0
 
 # Remove stop apache2 from being default webserver
-RUN update-rc.d apache2 remove \
-    && service apache2 stop
+RUN update-rc.d apache2 remove
+# RUN service apache2 stop
 
-RUN rm -rf /srv/mcweb \
-    && mkdir /srv/mcweb \
-    && sudo chown -R www-data:www-data /srv/mcweb /var/www/
+RUN sudo chown -R www-data:www-data /srv/mcweb /var/www/
 
 # Bootstrap McWeb via sudo / git
 RUN cd /srv/mcweb \
@@ -116,8 +112,8 @@ RUN cd /srv/mcweb \
 
 # Pick and pull the STABLE branch
 RUN cd /srv/mcweb/McWeb \
-    && sudo -H -u www-data  git checkout MCWEB_STABLE_2.0 \
-    && sudo -H -u www-data  git pull
+    && sudo -H -u www-data git checkout MCWEB_STABLE_2.0 \
+    && sudo -H -u www-data git pull
 
 RUN cd /srv/mcweb \
     && ln -sf /srv/mcweb/McWeb/scripts/uwsgi_mcweb /etc/init.d/uwsgi_mcweb \
@@ -167,11 +163,9 @@ RUN cd /srv/mcweb \
     && sudo -u www-data cp mcvenv/bin/activate McWeb_finishup \
     && echo cd McWeb/mcsimrunner/ >> McWeb_finishup \
     && echo python manage.py migrate >> McWeb_finishup \
-    && echo python manage.py collect_instr >>  McWeb_finishup
-
-RUN echo "echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$DJANGO_USER', '$DJANGO_EMAIL', '$DJANGO_PASSWORD')\" | python manage.py shell" >> McWeb_finishup
-
-RUN echo echo $DJANGO_PASSWORD >> McWeb_finishup \
+    && echo python manage.py collect_instr >>  McWeb_finishup \
+    && echo "echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$DJANGO_USER', '$DJANGO_EMAIL', '$DJANGO_PASSWORD')\" | python manage.py shell" >> McWeb_finishup \
+    && echo echo $DJANGO_PASSWORD >> McWeb_finishup \
     && echo echo >>  McWeb_finishup \
     && echo echo Essential setup done, here is a summary: >>  McWeb_finishup \
     && echo echo >>  McWeb_finishup \
@@ -183,7 +177,8 @@ RUN echo echo $DJANGO_PASSWORD >> McWeb_finishup \
     && echo echo >>  McWeb_finishup \
     && echo crontab /srv/mcweb/McWeb/scripts/cronjobs.txt >> McWeb_finishup
 
-RUN sudo -H -u www-data  bash McWeb_finishup
+RUN cd /srv/mcweb \
+    && sudo -H -u www-data  bash McWeb_finishup
 # /etc/init.d/uwsgi_mcweb start
 
 RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
