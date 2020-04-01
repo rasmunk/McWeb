@@ -123,20 +123,16 @@ RUN cd /srv/mcweb \
     && ln -sf /srv/mcweb/McWeb/scripts/uwsgi_mcweb /etc/init.d/uwsgi_mcweb \
     && update-rc.d uwsgi_mcweb defaults
 
-ARG IPADDR=`ip addr show | grep inet\ | cut -f 2 -d\t | cut -f 1 -d/ |grep -v 127 | sed "s/\ //g"`
-ARG SERVERNAME=`hostname`
-ENV IPADDR
-ENV SERVERNAME
+ENV IPADDR `ip addr show | grep inet\ | cut -f 2 -d\t | cut -f 1 -d/ |grep -v 127 | sed "s/\ //g"`
+ENV SERVERNAME `hostname`
 
 # echo -n Please enter your Django upload password and press [ENTER]:
 # read UPLOADPW
-ARG UPLOADPW=$DJANGO_PASSWORD
-ENV UPLOADPW
+ENV UPLOADPW $DJANGO_PASSWORD
 
 # echo -n Please enter desired simulator MPI cores pr. sim job press [ENTER]:
 # read MPICORES
-ARG MPICORES=$MPI
-ENV MPICORES
+ENV MPICORES $MPI
 
 # Allow www-data to restart uwsgi
 RUN echo >> /etc/sudoers \
