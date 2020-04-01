@@ -192,4 +192,7 @@ RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/defaul
 # RUN cd /srv/mcweb/McWeb/scripts/ \
 #     && ./bootstrap-docker.sh -u ${DJANGO_USER} -e ${DJANGO_EMAIL} -p ${DJANGO_PASSWORD} -m ${MPI}
 
+# Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
+COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
+
 CMD ["bash", "/srv/mcweb/McWeb/scripts/docker-entry.sh"]
