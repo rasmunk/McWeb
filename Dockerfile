@@ -64,14 +64,11 @@ RUN apt-get install -y --fix-missing openssh-server
 # RUN apt-get install -y --fix-missing xbase-clients
 
 # Download latest version of McWeb repo
-RUN git clone https://github.com/rasmunk/McWeb.git
+RUN cd /srv/mcweb/ \
+    && git clone https://github.com/rasmunk/McWeb.git
 
 # Run the McWeb setup script
-RUN cd McWeb/scripts/ \
+RUN cd /srv/mcweb/McWeb/scripts/ \
     && ./bootstrap-docker.sh -u ${DJANGO_USER} -e ${DJANGO_EMAIL} -p ${DJANGO_PASSWORD} -m ${MPI}
 
-ADD docker-entry.sh /docker-entry.sh
-RUN chown root:root /docker-entry.sh \
-    && chmod +x /docker-entry.sh
-
-CMD ["bash", "docker-entry.sh"]
+CMD ["bash", "/srv/mcweb/McWeb/scripts/docker-entry.sh"]
