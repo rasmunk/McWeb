@@ -64,7 +64,8 @@ RUN apt-get install -y --fix-missing openssh-server
 # RUN apt-get install -y --fix-missing xbase-clients
 
 # Download latest version of McWeb repo
-RUN cd /srv/mcweb/ \
+RUN mkdir -p /srv/mcweb \
+    && cd /srv/mcweb/ \
     && git clone https://github.com/rasmunk/McWeb.git
 
 # Run the McWeb setup script
