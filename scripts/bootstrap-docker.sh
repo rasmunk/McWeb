@@ -122,6 +122,9 @@ chown www-data:www-data landing/index.html
 cd /srv/mcweb
 sudo -u www-data mkdir McWeb/mcsimrunner/sim/intro-ns
 sudo -u www-data cp /usr/share/mcstas/2.6/examples/templateSANS.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/SANSsimple.instr
+sudo -u www-data cp /usr/share/mcstas/2.6/examples/Tomography.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/
+# This can be removed for a significant speedup in the build process
+# sudo -u www-data cp -a /usr/share/mcstas/2.6/examples/*.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/
 sudo -u www-data cp mcvenv/bin/activate McWeb_finishup
 echo cd McWeb/mcsimrunner/ >> McWeb_finishup
 echo python manage.py migrate >> McWeb_finishup
@@ -142,10 +145,10 @@ echo echo >>  McWeb_finishup
 echo crontab /srv/mcweb/McWeb/scripts/cronjobs.txt >> McWeb_finishup
 
 sudo -H -u www-data  bash McWeb_finishup
-/etc/init.d/uwsgi_mcweb start
+# /etc/init.d/uwsgi_mcweb start
 
 cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
-service nginx restart
+# service nginx restart
 
-cd
-echo 'script completed, possibly' >> feedback.txt
+#cd
+#echo 'script completed, possibly' >> feedback.txt
