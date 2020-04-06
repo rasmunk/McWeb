@@ -45,7 +45,7 @@ RUN apt-get -y install libldap2-dev
 RUN apt-get -y install libssl-dev
 RUN apt-get -y install python-virtualenv
 RUN apt-get -y install makepasswd
-RUN apt-get -y install nginx
+#RUN apt-get -y install nginx
 RUN apt-get -y install php-fpm
 RUN apt-get -y install php-mysql
 RUN apt-get -y install php-xml
@@ -181,8 +181,8 @@ RUN cd /srv/mcweb \
     && sudo -H -u www-data  bash McWeb_finishup
 # /etc/init.d/uwsgi_mcweb start
 
-RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
-# service nginx restart
+# RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
+# # service nginx restart
 
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh

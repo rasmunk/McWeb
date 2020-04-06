@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+    mcweb:
+        image: patchesmcweb
+        ports:
+            - 81:80
