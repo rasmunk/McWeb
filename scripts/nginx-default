@@ -17,9 +17,7 @@
 
 server {
     listen 80 default_server;
-
-    server_name mcweb.test
-                mcweb;
+    server_name www.mcweb.test mcweb.test mcweb;
 
     root /srv/mcweb;
     index index.html index.htm index.php;

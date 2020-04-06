@@ -184,15 +184,10 @@ RUN cd /srv/mcweb \
 RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
 # service nginx restart
 
-#cd
-#echo 'script completed, possibly' >> feedback.txt
-
-
-# # Run the McWeb setup script
-# RUN cd /srv/mcweb/McWeb/scripts/ \
-#     && ./bootstrap-docker.sh -u ${DJANGO_USER} -e ${DJANGO_EMAIL} -p ${DJANGO_PASSWORD} -m ${MPI}
-
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
+
+# Used for development. Can be removed from finished project
+RUN apt-get -y install -y locate nano
 
 CMD ["bash", "/srv/mcweb/McWeb/scripts/docker-entry.sh"]
