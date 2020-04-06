@@ -97,7 +97,7 @@ RUN cd /usr/lib/x86_64-linux-gnu \
 RUN update-rc.d apache2 remove
 # RUN service apache2 stop
 
-RUN sudo chown -R www-data:www-data /srv/mcweb /var/www/
+#RUN sudo chown -R www-data:www-data /srv/mcweb /var/www/
 
 # Bootstrap McWeb via sudo / git
 RUN cd /srv/mcweb \
