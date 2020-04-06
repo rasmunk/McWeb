@@ -3,5 +3,17 @@ version: '3.7'
 services:
     mcweb:
         image: patchesmcweb
+        environment:
+            - VIRTUAL_HOST=mcweb.test
+
+    nginx-proxy:
+        image: jwilder/nginx-proxy
         ports:
-            - 81:80
+            - "80:80"
+            - "443:443"
+        depends_on:
+            - mcweb
+        volumes:
+            - ./certs:/etc/nginx/certs
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+
