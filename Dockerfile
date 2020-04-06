@@ -181,8 +181,8 @@ RUN cd /srv/mcweb \
     && sudo -H -u www-data  bash McWeb_finishup
 # /etc/init.d/uwsgi_mcweb start
 
-# RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
-# # service nginx restart
+RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
+# service nginx restart
 
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
