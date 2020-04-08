@@ -3,8 +3,16 @@ version: '3.7'
 services:
     mcweb:
         image: patchesmcweb
+        hostname: mcweb
         environment:
             - VIRTUAL_HOST=mcweb.test
+        networks:
+            default:
+                aliases:
+                    - mcweb
+                    - mcweb.test
+        extra_hosts:
+          - "mcweb.test:127.0.0.1"
 
     nginx-proxy:
         image: jwilder/nginx-proxy
@@ -17,3 +25,6 @@ services:
             - ./certs:/etc/nginx/certs
             - /var/run/docker.sock:/tmp/docker.sock:ro
 
+networks:
+    default:
+        attachable: True
