@@ -181,6 +181,9 @@ RUN cd /srv/mcweb \
     && sudo -H -u www-data  bash McWeb_finishup
 # /etc/init.d/uwsgi_mcweb start
 
+# overwrite nginx defaults for now
+COPY scripts/nginx-default /srv/mcweb/McWeb/scripts/nginx-default
+
 RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
 # service nginx restart
 

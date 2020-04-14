@@ -1,30 +1,46 @@
 version: '3.7'
 
 services:
-    mcweb:
-        image: patchesmcweb
-        hostname: mcweb
-        environment:
-            - VIRTUAL_HOST=mcweb.test
-        networks:
-            default:
-                aliases:
-                    - mcweb
-                    - mcweb.test
-        extra_hosts:
-          - "mcweb.test:127.0.0.1"
+  mcweb:
+    image: patchesmcweb
+    hostname: mcweb-test
+    environment:
+      TZ: Europe/Copenhagen
+    ports:
+      - "8080:8080"
+    networks:
+      default:
+        aliases:
+          - www.mcweb.test
+          - mcweb.test
+          - mcweb
+    extra_hosts:
+      - "mcweb.test:127.0.0.1"
+    volumes:
+      - type: volume
+        source: certs
+        target: /etc/httpd/mc-certificates
 
-    nginx-proxy:
-        image: jwilder/nginx-proxy
-        ports:
-            - "80:80"
-            - "443:443"
-        depends_on:
-            - mcweb
-        volumes:
-            - ./certs:/etc/nginx/certs
-            - /var/run/docker.sock:/tmp/docker.sock:ro
+  nginx-proxy:
+    hostname: nginx-reverse-proxy
+    image: jwilder/nginx-proxy
+    depends_on:
+      - mcweb
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx.config/mcweb-test.conf:/etc/nginx/conf.d/mcweb-test.conf:ro
 
-networks:
-    default:
-        attachable: True
+volumes:
+  conf:
+    driver_opts:
+      type: none
+      device: $PWD/nginx.config
+      o: bind
+  certs:
+    driver_opts:
+      type: none
+      device: $PWD/certs
+      o: bind

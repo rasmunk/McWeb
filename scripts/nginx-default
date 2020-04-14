@@ -46,10 +46,11 @@ server {
 
     # Protect mediawiki install image dir againt scripting attacks
     location /mediawiki/images {
-        location ~ .*\.(php)?$ { 	
-	  deny all; 
+        location ~ .*\.(php)?$ {
+	  deny all;
         }
-        location ~ .*\.(py)?$ { 
+        location ~ .*\.(py)?$ {
+	  deny all;
         }
     }
 
@@ -59,11 +60,11 @@ server {
 
     # Protect mediawiki install image dir againt scripting attacks
     location /wiki/images {
-        location ~ .*\.(php)?$ { 	
-	  deny all; 
+        location ~ .*\.(php)?$ {
+	  deny all;
         }
-        location ~ .*\.(py)?$ { 
-          deny all; 
+        location ~ .*\.(py)?$ {
+          deny all;
         }
     }
 
@@ -81,11 +82,11 @@ server {
 
     location /ssp {
         alias /srv/mcweb/ssp;
-    }    
-    
+    }
+
     location /landing {
         alias /srv/mcweb/landing;
-    } 
+    }
 
     location ~ \.php$ {
          include snippets/fastcgi-php.conf;
