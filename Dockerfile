@@ -181,9 +181,8 @@ RUN cd /srv/mcweb \
     && sudo -H -u www-data  bash McWeb_finishup
 # /etc/init.d/uwsgi_mcweb start
 
-# overwrite nginx defaults for now
-COPY scripts/nginx-default /srv/mcweb/McWeb/scripts/nginx-default
-
+# overwrite nginx defaults
+COPY nginx/mcweb.conf /srv/mcweb/McWeb/scripts/nginx-default
 RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
 # service nginx restart
 
@@ -193,6 +192,6 @@ COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 # Used for development. Can be removed from finished project
 RUN apt-get -y install -y locate nano
 
-EXPOSE 8080 443
+EXPOSE 80 443
 
 CMD ["bash", "/srv/mcweb/McWeb/scripts/docker-entry.sh"]
