@@ -191,6 +191,7 @@ COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 
 # Used for development. Can be removed from finished project
 RUN apt-get -y install -y locate nano
+RUN updatedb
 
 EXPOSE 80 443
 
