@@ -9,10 +9,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-#       - "8080:8080"
-#       - "8000:8000"
     volumes:
-#      - ./nginx/nginx-proxy.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/nginx-proxy.conf:/etc/nginx/conf.d/mcweb.conf:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
@@ -21,8 +18,6 @@ services:
   mcweb:
     image: mcweb:latest
     hostname: mcweb
-    ports:
-      - "2222:2222"
     networks:
       default:
         aliases:

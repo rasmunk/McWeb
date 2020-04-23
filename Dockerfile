@@ -189,6 +189,13 @@ RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/defaul
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 
+# Add docker support
+RUN apt install -y apt-transport-https ca-certificates gnupg-agent software-properties-common
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+RUN sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+RUN apt update
+RUN apt install -y docker-ce
+
 # Used for development. Can be removed from finished project
 RUN apt-get -y install -y locate nano
 RUN updatedb
