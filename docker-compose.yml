@@ -23,6 +23,8 @@ services:
         aliases:
           - mcweb
           - mcweb.test
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     extra_hosts:
       - "mcweb.test:127.0.0.1"
 
