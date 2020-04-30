@@ -25,7 +25,7 @@ services:
           - mcweb.test
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./instruments:/srv/mcweb/McWeb/mcsimrunner/sim
+      - ./bootstrap_data/instruments:/srv/mcweb/McWeb/mcsimrunner/sim
     extra_hosts:
       - "mcweb.test:127.0.0.1"
 

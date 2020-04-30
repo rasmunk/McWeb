@@ -165,9 +165,9 @@ RUN cd /srv/mcweb \
     && echo "echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$DJANGO_USER', '$DJANGO_EMAIL', '$DJANGO_PASSWORD')\" | python manage.py shell" >> McWeb_finishup \
     && echo echo $DJANGO_PASSWORD >> McWeb_finishup \
     && echo echo >>  McWeb_finishup \
-    && echo echo Essential setup done, here is a summary: >>  McWeb_finishup \
+    && echo echo Essential setup done, here is a summary: >> McWeb_finishup \
     && echo echo >>  McWeb_finishup \
-    && echo echo Django setup: >>  McWeb_finishup \
+    && echo echo Django setup: >> McWeb_finishup \
     && echo echo username: $DJANGO_USER >>  McWeb_finishup \
     && echo echo password: $DJANGO_PASS >>  McWeb_finishup \
     && echo echo email-adress: admin@localhost >>  McWeb_finishup \
@@ -176,7 +176,7 @@ RUN cd /srv/mcweb \
     && echo crontab /srv/mcweb/McWeb/scripts/cronjobs.txt >> McWeb_finishup
 
 RUN cd /srv/mcweb \
-    && sudo -H -u www-data  bash McWeb_finishup
+    && sudo -H -u www-data bash McWeb_finishup
 # /etc/init.d/uwsgi_mcweb start
 
 # overwrite nginx defaults
@@ -195,7 +195,7 @@ RUN apt update
 RUN apt install -y docker-ce
 
 # Used for development. Can be removed from finished project
-RUN apt-get -y install -y locate nano
+RUN apt-get -y install locate nano
 RUN updatedb
 
 EXPOSE 80 443

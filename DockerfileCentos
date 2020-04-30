@@ -1,0 +1,276 @@
+FROM centos/systemd
+
+# -- Configuration variables --
+# tzdata
+ARG region=Europe
+ARG city=Copenhagen
+# Django 
+ARG DJANGO_PASSWORD=Passw0rd123
+ARG DJANGO_USER=djangoadmin
+ARG DJANGO_EMAIL=admin@localhost
+# MPI cores
+ARG MPI=1
+
+# Get required commands for script
+RUN yum -y update
+
+# RUN apt-get install -y build-essential
+# RUN apt-get install -y libssl-dev
+# RUN apt-get install -y libcurl4-gnutls-dev
+# RUN apt-get install -y libexpat1-dev
+# RUN apt-get install -y gettext
+# RUN apt-get install -y unzip
+
+#RUN rm -f /var/lib/rpm/.*.lock
+#RUN rpm --rebuilddb
+#RUN restorecon -r /var/lib/rpm
+
+RUN yum install -y git
+RUN yum install -y sudo
+RUN yum install -y wget
+RUN yum install -y epel-release
+RUN yum install -y perl-PDL
+RUN yum install -y yum-cron
+
+#RUN rpm -Uvh https://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/p/perl-PDL-2.7.0-2.el7.1.x86_64.rpm
+
+#RUN yum install -y perl-PDL
+
+#RUN DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
+
+# Install and configure tzdata for bootstrap script
+#RUN ln -fs /usr/share/zoneinfo/${region}/${city} /etc/localtime \
+#    && apt-get install -y tzdata
+
+#RUN yum install -y net-tools
+#RUN yum install -y iproute2
+#RUN yum install -y sudo
+#RUN yum install -y zip
+#RUN yum install -y unzip
+#RUN yum install -y cron
+#RUN yum install -y curl
+#RUN yum install -y lsof
+
+# Add mccode repo
+RUN cd /etc/yum.repos.d/ \
+    && sudo wget http://packages.mccode.org/rpm/mccode.repo \
+    && sudo yum -y update
+
+# Base packages for McCode + MPI
+RUN yum -y install openmpi
+RUN yum -y install openmpi-devel
+RUN yum -y install mcstas-suite-python
+RUN yum -y install mcstas-suite-perl
+RUN yum -y install mcxtrace-suite-perl
+RUN ln -sf /usr/lib64/openmpi/bin/mpirun /usr/local/bin
+RUN ln -sf /usr/lib64/openmpi/bin/mpicc /usr/local/bin
+
+#RUN cd
+#RUN yum -y install mariadb postgresql postgresql-server
+##mysql-server mysql-client
+#RUN sudo postgresql-setup initdb
+#RUN sudo systemctl start postgresql
+#RUN sudo systemctl enable postgresql
+
+RUN cd /tmp \
+    && rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+
+# Packages for bootstrapping an McWeb instance
+
+RUN yum -y install python-devel
+RUN yum -y install php70w
+RUN yum -y install openssl-devel
+RUN yum -y install python-virtualenv
+RUN yum -y install expect
+RUN yum -y install nginx
+RUN yum -y install php70w-fpm
+RUN yum -y install php70w-mysql
+RUN yum -y install php70w-xml
+RUN yum -y install php70w-curl
+RUN yum -y install php70w-zip
+RUN yum -y install php70w-gd
+RUN yum -y install php70w-mbstring
+RUN yum -y install php70w-xmlrpc
+RUN yum -y install php70w-soap
+RUN yum -y install php70w-intl
+RUN yum -y install php70w-ldap
+RUN yum -y install openldap
+RUN yum -y install compat-openldap
+RUN yum -y install openldap-clients
+RUN yum -y install openldap-servers
+RUN yum -y install openldap-servers-sql
+RUN yum -y install openldap-devel
+
+#RUN apt-get -y install libsasl2-dev
+#RUN apt-get -y install python-dev
+#RUN apt-get -y install libldap2-dev
+#RUN apt-get -y install libssl-dev
+#RUN apt-get -y install python-virtualenv
+#RUN apt-get -y install makepasswd
+#RUN apt-get -y install nginx
+#RUN apt-get -y install php-fpm
+#RUN apt-get -y install php-mysql
+#RUN apt-get -y install php-xml
+#RUN apt-get -y install php-curl
+#RUN apt-get -y install php-zip
+#RUN apt-get -y install php-gd
+#RUN apt-get -y install php-mbstring
+#RUN apt-get -y install php-xmlrpc
+#RUN apt-get -y install php-soap
+#RUN apt-get -y install php-intl
+#RUN apt-get -y install php-ldap
+#RUN apt-get -y install build-essential
+
+#RUN apt-get install -y --fix-missing openssh-server
+
+# RUN apt-get install -y --fix-missing xbase-clients
+
+# Download latest version of McWeb repo
+RUN mkdir -p /srv/mcweb \
+    && cd /srv/mcweb/ \
+    && git clone https://github.com/rasmunk/McWeb.git
+
+## Add nonfree and contrib repo
+#RUN sed -i.bak s/main/main\ contrib\ non-free/g /etc/apt/sources.list
+#RUN apt-get update
+
+## Add mccode repo
+#RUN cd /etc/apt/sources.list.d/ \
+#    && wget http://packages.mccode.org/debian/mccode.list \
+#    && apt-get update
+
+## Base packages for McCode + MPI
+#RUN apt-get -y install -y mcstas-suite-python
+#RUN apt-get -y install -y mcxtrace-suite-perl
+#RUN apt-get -y install -y mcxtrace-suite-python
+#RUN apt-get -y install -y openmpi-bin
+#RUN apt-get -y install -y libopenmpi-dev
+#RUN apt-get -y install -y mcstas-suite-perl
+
+# Ensure we use mcdoc.pl rather than python version
+RUN ln -sf /usr/share/mcstas/2.6/bin/mcdoc.pl /usr/bin/mcdoc
+
+## Ensure mcplot.pl uses "proper" PGPLOT rather than GIZA
+#RUN cd /usr/lib/x86_64-linux-gnu \
+#    && sudo ln -sf ../libpgplot.so libpgplot.so.0 \
+#    && sudo ln -sf ../libcpgplot.so libcpgplot.so.0
+
+# Remove stop apache2 from being default webserver
+#RUN update-rc.d apache2 remove
+# RUN service apache2 stop
+
+RUN sudo chown -R nginx:nginx /srv/mcweb /var/www/
+
+# Bootstrap McWeb via sudo / git
+RUN cd /srv/mcweb \
+    && sudo -H -u nginx virtualenv mcvenv \
+    && sudo -u nginx cp mcvenv/bin/activate mcvenv_finishup \
+    && echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
+    #&& echo pip install -I django-auth-ldap==1.2.7 >> mcvenv_finishup \
+    #&& echo pip install uwsgi  >> mcvenv_finishup \
+    && sudo -H -u nginx  bash mcvenv_finishup
+
+#RUN sudo -H -u www-data  git clone https://github.com/rasmunk/McWeb
+
+# Pick and pull the STABLE branch
+RUN cd /srv/mcweb/McWeb \
+    && sudo -H -u nginx git checkout MCWEB_STABLE_2.0 \
+    && sudo -H -u nginx git pull
+
+RUN cd /srv/mcweb \
+    && ln -sf /srv/mcweb/McWeb/scripts/uwsgi_mcweb /etc/init.d/uwsgi_mcweb \
+#    && update-rc.d uwsgi_mcweb defaults
+    && sudo chkconfig --add uwsgi_mcweb
+
+ENV IPADDR `ip addr show | grep inet\ | cut -f 2 -d\t | cut -f 1 -d/ |grep -v 127 | sed "s/\ //g"`
+ENV SERVERNAME `hostname`
+# Increase search limit to 50000 in ldap:
+#RUN ldapmodify -Q -Y EXTERNAL -H ldapi:/// -f /srv/mcweb/McWeb/scripts/changesize.ldif
+
+# echo -n Please enter your Django upload password and press [ENTER]:
+# read UPLOADPW
+ENV UPLOADPW $DJANGO_PASSWORD
+
+# echo -n Please enter desired simulator MPI cores pr. sim job press [ENTER]:
+# read MPICORES
+ENV MPICORES $MPI
+
+# Allow www-data to restart uwsgi
+RUN echo >> /etc/sudoers \
+    && echo "# Allow nginx to restart uwsgi_mcweb service" >> /etc/sudoers \
+    && echo "nginx ALL = NOPASSWD: /etc/init.d/uwsgi_mcweb" >> /etc/sudoers
+
+RUN ls /srv/mcweb/McWeb/mcsimrunner/mcweb/
+
+# Last setup of uwsgi etc
+RUN echo Resuming setup...
+RUN sed "s/dc=risoe,dc=dk/${LDAPDOMAIN}/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py.in > /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+RUN sed -i "s/@LDAP_PW@/${LDAP_PASS}/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+RUN sed -i "s/@IPADDR@/127.0.0.1/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+RUN sed -i "s/@SERVERNAME@/localhost/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+RUN sed -i "s/@UPLOADPW@/${UPLOADPW}/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+RUN sed -i "s/@MPICORES@/${MPICORES}/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+#    && sed -i "s/'django_auth_ldap/\#'django_auth_ldap/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py \
+#    && sed -i "s/\#'django.contrib.auth/'django.contrib.auth/g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py \
+#    && sed -i "s/DEBUG = True/DEBUG = False/" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py \
+#    && sed -i "s/-dev//g" /srv/mcweb/McWeb/mcsimrunner/mcweb/settings.py
+
+# Simple, static "admin" landing page
+RUN cd /srv/mcweb \
+    && sudo -u nginx mkdir landing \
+    && sed "s/@HOSTNAME@/${SERVERNAME}/g" McWeb/landingpage/landingpage.in.html > landing/index.html \
+    && chown nginx:nginx landing/index.html
+
+RUN cd /srv/mcweb \
+#    && sudo -u www-data mkdir McWeb/mcsimrunner/sim/intro-ns \
+#    && sudo -u www-data cp /usr/share/mcstas/2.6/examples/templateSANS.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/SANSsimple.instr \
+#    && sudo -u www-data cp /usr/share/mcstas/2.6/examples/Tomography.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/ \
+    && sudo -u nginx cp mcvenv/bin/activate McWeb_finishup \
+    && echo cd McWeb/mcsimrunner/ >> McWeb_finishup \
+    && echo python manage.py migrate >> McWeb_finishup \
+    && echo python manage.py collect_instr >>  McWeb_finishup \
+    && echo "echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$DJANGO_USER', '$DJANGO_EMAIL', '$DJANGO_PASSWORD')\" | python manage.py shell" >> McWeb_finishup \
+    && echo echo $DJANGO_PASSWORD >> McWeb_finishup \
+    && echo echo >>  McWeb_finishup \
+    && echo echo Essential setup done, here is a summary: >>  McWeb_finishup \
+    && echo echo >>  McWeb_finishup \
+    && echo echo Django setup: >>  McWeb_finishup \
+    && echo echo username: $DJANGO_USER >>  McWeb_finishup \
+    && echo echo password: $DJANGO_PASS >>  McWeb_finishup \
+    && echo echo email-adress: admin@localhost >>  McWeb_finishup \
+    && echo echo Django upload pass: $UPLOADPASS >>  McWeb_finishup \
+    && echo echo >>  McWeb_finishup \
+    && echo crontab /srv/mcweb/McWeb/scripts/cronjobs.txt >> McWeb_finishup
+
+RUN cd /srv/mcweb \
+    && sudo -H -u nginx bash McWeb_finishup
+# /etc/init.d/uwsgi_mcweb start
+
+# overwrite nginx defaults
+COPY nginx/mcweb.conf /srv/mcweb/McWeb/scripts/nginx-default
+
+#RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
+RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/default.d/mcweb.conf
+# service nginx restart
+
+# Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
+COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
+
+## Add docker support
+#RUN apt install -y apt-transport-https ca-certificates gnupg-agent software-properties-common
+#RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+#RUN sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+#RUN apt update
+#RUN apt install -y docker-ce
+
+RUN sudo yum install -y yum-utils
+RUN sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+RUN sudo yum install -y docker-ce docker-ce-cli containerd.io
+# Used for development. Can be removed from finished project
+RUN yum -y install -y mlocate nano
+RUN updatedb
+
+EXPOSE 80 443
+
+#CMD ["bash", "/srv/mcweb/McWeb/scripts/docker-entry.sh"]
+CMD ["/usr/sbin/init"]
