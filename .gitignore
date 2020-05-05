@@ -3,3 +3,4 @@ certs/
 
 bootstrap_data/instruments/*/*.c
 bootstrap_data/instruments/*/*.out
+bootstrap_data/simrun_data/

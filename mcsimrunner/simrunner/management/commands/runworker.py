@@ -4,6 +4,7 @@ Based on SimRun model. Updates django db and is implemented as a django command.
 Outputs comprehensive messages to stdout, which can be increased to include
 mcrun, mcdisplay and mcplot stdout and stderr.
 '''
+import getpass
 import subprocess
 import os
 import sys
@@ -66,7 +67,6 @@ def sweep_zip_gen(f,dirname):
     _log(stdoutdata)
     _log(stderrdata)
     return (stdoutdata, stderrdata)
-
 
 def rename_mcstas_to_mccode(simrun):
     ''' run before mcplot to avoid issues with old versions of mcstas '''
@@ -325,6 +325,101 @@ def mcrun(simrun, print_mcrun_output=False):
     
     _log('data: %s' % simrun.data_folder)
 
+def docker_mcrun(simrun, print_mcrun_output=False):
+    ''' runs the simulation associated with simrun '''
+
+    # create empty stdout.txt and stderr.txt files
+    f = open('%s/stdout.txt' % simrun.data_folder, 'w+')
+    f.close()
+    f = open('%s/stderr.txt' % simrun.data_folder, 'w+')
+    f.close()
+
+    _log('running remotely as user: ' + getpass.getuser())
+
+    # setup remote container
+    cmd = 'docker run -it -d --name remote_mcweb patches-mcstas-mcxtrace bash'
+    comm_to_remote(cmd, simrun)
+
+    # setup users in remote container
+    cmd = 'docker exec remote_mcweb adduser -u 33 -g 33 www-data'
+    comm_to_remote(cmd, simrun)
+
+    # setup groups in remote container
+    cmd = 'docker exec remote_mcweb groupmod -n www-data tape'
+    comm_to_remote(cmd, simrun)
+
+    # copy data to container
+    cmd = 'docker cp . remote_mcweb:/simrun'
+    comm_to_remote(cmd, simrun)
+
+    # execute mcrun
+    gravity = '-g ' if simrun.gravity else ''
+
+    # cmd = "docker " \
+    #       "exec " \
+    #       "remote_mcweb " \
+    #       "sudo -H -u www-data " \
+    #       "bash -c " \
+    #       "'/usr/local/mcstas/2.9999-git/bin/mcrun " \
+    #       "/simrun/" + simrun.instr_displayname + ".instr " \
+    #       + gravity \
+    #       + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
+    cmd = "docker " \
+          "exec " \
+          "remote_mcweb " \
+          "mcrun " \
+          "/simrun/" + simrun.instr_displayname + ".instr " \
+          + gravity \
+          + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
+
+    cmd = cmd + ' -n ' + str(simrun.neutrons)
+    if simrun.scanpoints > 1:
+        cmd = cmd + ' -N ' + str(simrun.scanpoints)
+    if simrun.seed > 0:
+        cmd = cmd + ' -s ' + str(simrun.seed)
+    for p in simrun.params:
+        cmd = cmd + ' ' + p[0] + '=' + p[1]
+
+#    cmd = cmd + "'"
+
+    comm_to_remote(cmd, simrun)
+
+    # retrieve data
+    cmd = "docker cp remote_mcweb:/simrun/mcstas ./mcstas"
+    comm_to_remote(cmd, simrun)
+
+    # stop the container
+    cmd = "docker stop remote_mcweb"
+    comm_to_remote(cmd, simrun)
+
+    # remove the container
+    cmd = "docker container rm remote_mcweb"
+    comm_to_remote(cmd, simrun)
+
+    _log('data: %s' % simrun.data_folder)
+
+def comm_to_remote(cmd, simrun):
+    _log('running cmd: %s' % cmd)
+
+    process = subprocess.Popen(cmd,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               shell=True,
+                               cwd=simrun.data_folder)
+    # TODO: implement a timeout (max simulation time)
+    (stdout, stderr) = process.communicate()
+
+    o = open('%s/stdout.txt' % simrun.data_folder, 'w')
+    o.write(stdout)
+    o.close()
+    e = open('%s/stderr.txt' % simrun.data_folder, 'w')
+    e.write(stderr)
+    e.close()
+
+    if process.returncode != 0:
+        simrun_folder = str('/simrun/' + simrun.__str__())
+        raise Exception('Instrument run failure - see %s.' % simrun_folder)
+
 def init_processing(simrun):
     ''' creates data folder, copies instr files and updates simrun object '''
     try: 
@@ -434,7 +529,8 @@ def threadwork(simrun, semaphore):
             init_processing(simrun)
         
             # process
-            mcrun(simrun)
+#            mcrun(simrun)
+            docker_mcrun(simrun)
             simrun.enable_cachefrom = True
         
             mcdisplay_webgl(simrun)
