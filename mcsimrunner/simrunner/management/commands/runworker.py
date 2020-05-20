@@ -14,6 +14,7 @@ import threading
 import logging
 import re
 import traceback
+import pyparsing
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -37,6 +38,7 @@ def maketar(simrun):
     
 def plot_file(f, log=False):
     cmd = '%s %s' % (MCPLOT_CMD, f)
+    _log('DM - plotting file: %s, with command: %s' % (f, cmd))
     if log:
         cmd = '%s %s' % (MCPLOT_LOGCMD,f)
     process = subprocess.Popen(cmd,
@@ -49,6 +51,9 @@ def plot_file(f, log=False):
             os.rename(f + '.png',os.path.splitext(os.path.splitext(f)[0])[0] + '_log.png')
         else:    
             os.rename(f + '.png',os.path.splitext(os.path.splitext(f)[0])[0] + '.png')
+
+    _log('DM stdout: %s' % stdoutdata)
+    _log('DM stderr: %s' % stderrdata)
     return (stdoutdata, stderrdata)
 
 def sweep_zip_gen(f,dirname):
@@ -87,6 +92,8 @@ def mcplot(simrun):
     ''' also spawns monitor zip file creation in case of scan sweep '''
     rename_mcstas_to_mccode(simrun)
     plotfiles_ext = "html" if MCPLOT_USE_HTML_PLOTTER else "png"
+
+    _log('DM - plotfiles_ext: %s' % plotfiles_ext)
 
     try:
         if simrun.scanpoints > 1:
@@ -189,6 +196,10 @@ def mcplot(simrun):
         simrun.plot_files = plot_files
         simrun.plot_files_log = plot_files_log
         simrun.save()
+
+        _log('DM - simrun.data_files: %s' % data_files)
+        _log('DM - simrun.plot_files: %s' % plot_files)
+        _log('DM - simrun.plot_files_log: %s' % plot_files_log)
 
     except Exception as e:
         raise Exception('mcplot fail: %s' % e.__str__())
@@ -336,57 +347,56 @@ def docker_mcrun(simrun, print_mcrun_output=False):
 
     _log('running remotely as user: ' + getpass.getuser())
 
-    # setup remote container
-    cmd = 'docker run -it -d --name remote_mcweb patches-mcstas-mcxtrace bash'
-    comm_to_remote(cmd, simrun)
+    try:
+        # setup remote container
+        cmd = 'docker run -it -d --name remote_mcweb patches-mcstas-mcxtrace bash'
+        comm_to_remote(cmd, simrun)
 
-    # setup users in remote container
-    cmd = 'docker exec remote_mcweb adduser -u 33 -g 33 www-data'
-    comm_to_remote(cmd, simrun)
+        # # setup users in remote container
+        # cmd = 'docker exec remote_mcweb adduser -u 33 -g 33 www-data'
+        # comm_to_remote(cmd, simrun)
+        #
+        # # setup groups in remote container
+        # cmd = 'docker exec remote_mcweb groupmod -n www-data tape'
+        # comm_to_remote(cmd, simrun)
 
-    # setup groups in remote container
-    cmd = 'docker exec remote_mcweb groupmod -n www-data tape'
-    comm_to_remote(cmd, simrun)
+        # copy data to container
+        cmd = 'docker cp . remote_mcweb:/simrun'
+        comm_to_remote(cmd, simrun)
 
-    # copy data to container
-    cmd = 'docker cp . remote_mcweb:/simrun'
-    comm_to_remote(cmd, simrun)
+        # execute mcrun
+        gravity = '-g ' if simrun.gravity else ''
+        cmd = "docker " \
+              "exec " \
+              "remote_mcweb " \
+              "mcrun " \
+              "/simrun/" + simrun.instr_displayname + ".instr " \
+              + gravity \
+              + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
+        cmd = cmd + ' -n ' + str(simrun.neutrons)
+        if simrun.scanpoints > 1:
+            cmd = cmd + ' -N ' + str(simrun.scanpoints)
+        if simrun.seed > 0:
+            cmd = cmd + ' -s ' + str(simrun.seed)
+        for p in simrun.params:
+            cmd = cmd + ' ' + p[0] + '=' + p[1]
 
-    # execute mcrun
-    gravity = '-g ' if simrun.gravity else ''
+        comm_to_remote(cmd, simrun)
 
-    # cmd = "docker " \
-    #       "exec " \
-    #       "remote_mcweb " \
-    #       "sudo -H -u www-data " \
-    #       "bash -c " \
-    #       "'/usr/local/mcstas/2.9999-git/bin/mcrun " \
-    #       "/simrun/" + simrun.instr_displayname + ".instr " \
-    #       + gravity \
-    #       + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
-    cmd = "docker " \
-          "exec " \
-          "remote_mcweb " \
-          "mcrun " \
-          "/simrun/" + simrun.instr_displayname + ".instr " \
-          + gravity \
-          + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
+        # retrieve data
+        cmd = "docker cp remote_mcweb:/simrun/mcstas ./mcstas"
+        comm_to_remote(cmd, simrun)
 
-    cmd = cmd + ' -n ' + str(simrun.neutrons)
-    if simrun.scanpoints > 1:
-        cmd = cmd + ' -N ' + str(simrun.scanpoints)
-    if simrun.seed > 0:
-        cmd = cmd + ' -s ' + str(simrun.seed)
-    for p in simrun.params:
-        cmd = cmd + ' ' + p[0] + '=' + p[1]
+    except Exception as e:
+        # attempt cleanup
+        # stop the container
+        cmd = "docker stop remote_mcweb"
+        comm_to_remote(cmd, simrun)
 
-#    cmd = cmd + "'"
-
-    comm_to_remote(cmd, simrun)
-
-    # retrieve data
-    cmd = "docker cp remote_mcweb:/simrun/mcstas ./mcstas"
-    comm_to_remote(cmd, simrun)
+        # remove the container
+        cmd = "docker container rm remote_mcweb"
+        comm_to_remote(cmd, simrun)
+        raise e
 
     # stop the container
     cmd = "docker stop remote_mcweb"
@@ -430,7 +440,7 @@ def init_processing(simrun):
         # copy instrument from sim folder to simrun data folder 
         instr_source = '%s/%s/%s.instr' % (SIM_DIR, simrun.group_name, simrun.instr_displayname)
         instr = '%s/%s.instr' % (simrun.data_folder, simrun.instr_displayname)
-        p = subprocess.Popen(['cp','-p',instr_source, instr])
+        p = subprocess.Popen(['cp', '-p', instr_source, instr])
         p.wait()
 
         # symlink the .c and the .out files
@@ -438,9 +448,9 @@ def init_processing(simrun):
         src_out = '%s/%s/%s.out' % (SIM_DIR, simrun.group_name, simrun.instr_displayname)
         ln_c = '%s/%s.c' % (simrun.data_folder, simrun.instr_displayname)
         ln_out = '%s/%s.out' % (simrun.data_folder, simrun.instr_displayname)
-        p = subprocess.Popen(['cp','-p',src_c, ln_c])
+        p = subprocess.Popen(['cp', '-p', src_c, ln_c])
         p.wait()
-        p = subprocess.Popen(['cp','-p',src_out, ln_out])
+        p = subprocess.Popen(['cp', '-p', src_out, ln_out])
         p.wait()
 
         # symlink the contents of sim/datafiles/
@@ -455,6 +465,54 @@ def init_processing(simrun):
         
     except Exception as e:
         raise Exception('init_processing: %s (%s)' % (type(e).__name__, e.__str__()))
+
+def docker_init_processing(simrun):
+    '''calls init_processing but also copies over all component definitions
+    as they will be need to be sent to the remote container'''
+    #TODO improve this by only copying those component definitons that have
+    # been changed/added
+
+    init_processing(simrun)
+
+    instr_filename = '%s/%s.instr' % (simrun.data_folder, simrun.instr_displayname)
+    with open(instr_filename) as instr_file:
+        instr_data = instr_file.read()
+
+    pyparsing.cppStyleComment.ignore(pyparsing.dblQuotedString)
+    stripped_instr_data = pyparsing.cppStyleComment.suppress().transformString(instr_data)
+
+    component_token = "COMPONENT"
+    component_variable = pyparsing.Word(pyparsing.alphanums + '_')('variable')
+    equals = pyparsing.Suppress('=')
+    component_type = pyparsing.Word(pyparsing.alphanums + '-_!#$%&*+,-/:;<=>?@^`|~')('type')
+
+    variable_definition = component_token + component_variable + equals + component_type
+
+    matches = variable_definition.scanString(stripped_instr_data)
+    components = []
+    for match in matches:
+        result = match[0]
+        if result.type not in components:
+            components.append(result.type)
+
+    _log('Got %s unique components' % len(components))
+    _log(components)
+
+    for component in components:
+        # find files locally
+        group_path = os.path.join('sim', simrun.group_name, component + '.comp')
+        _log('checking local path: %s' % group_path)
+
+        if os.path.exists(group_path):
+            _log('Got local component: %s' % component)
+
+            target_path = os.path.join(simrun.data_folder, component + '.comp')
+
+            p = subprocess.Popen(['cp', '-p', group_path, target_path])
+            p.wait()
+        else:
+            _log('Component %s does not exist locally, using pre-defined version' % component)
+
 
 def check_age(simrun, max_mins):
     ''' checks simrun age: raises an exception if age is greater than max_mins. (Does not alter object simrun.) '''
@@ -525,18 +583,27 @@ def threadwork(simrun, semaphore):
 
         # check for existing, similar simruns for reuse
         if simrun.force_run or not cache_check(simrun):
-            # init processing
-            init_processing(simrun)
-        
-            # process
-#            mcrun(simrun)
-            docker_mcrun(simrun)
+
+            remote = True
+
+            if remote:
+                # init processing
+                docker_init_processing(simrun)
+
+                # process
+                docker_mcrun(simrun)
+            else:
+                # init processing
+                init_processing(simrun)
+
+                # process
+                mcrun(simrun)
             simrun.enable_cachefrom = True
-        
+
             mcdisplay_webgl(simrun)
             mcdisplay(simrun)
             mcplot(simrun)
-        
+
             # post-processing
             maketar(simrun)
             simrun.complete = timezone.now()
@@ -567,7 +634,7 @@ def work(threaded=True, semaphore=None):
     
     # avoid having two worker threads starting on the same job
     simrun = get_and_start_new_simrun()
-    
+
     while simrun:
         # exceptions raised during the processing block are written to the simrun object as fail, but do not break the processing loop
         try:

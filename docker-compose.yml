@@ -30,6 +30,7 @@ services:
         target: /srv/mcweb/McWeb/mcsimrunner/sim
     extra_hosts:
       - "mcweb.test:127.0.0.1"
+#    command: "/srv/mcweb/McWeb/scripts/docker-entry.sh"
 
 volumes:
   instruments:

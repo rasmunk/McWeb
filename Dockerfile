@@ -72,7 +72,7 @@ RUN cd /srv/mcweb \
     && sudo -u www-data cp mcvenv/bin/activate mcvenv_finishup \
     # TODO move these to actual dependencies location
     # additional pip installs required by remote_worker
-    && echo pip install -I docker \
+    && echo pip install -I pyparsing ply numpy >> mcvenv_finishup \
     && echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
     && echo pip install uwsgi >> mcvenv_finishup \
     && sudo -H -u www-data bash mcvenv_finishup
@@ -118,9 +118,6 @@ RUN cd /srv/mcweb \
     && chown www-data:www-data landing/index.html
 
 RUN cd /srv/mcweb \
-#    && sudo -u www-data mkdir McWeb/mcsimrunner/sim/intro-ns \
-#    && sudo -u www-data cp /usr/share/mcstas/2.6/examples/templateSANS.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/SANSsimple.instr \
-#    && sudo -u www-data cp /usr/share/mcstas/2.6/examples/Tomography.instr /srv/mcweb/McWeb/mcsimrunner/sim/intro-ns/ \
     && sudo -u www-data cp mcvenv/bin/activate McWeb_finishup \
     && echo cd McWeb/mcsimrunner/ >> McWeb_finishup \
     && echo python manage.py migrate >> McWeb_finishup \
@@ -156,12 +153,13 @@ RUN apt install -y apt-transport-https ca-certificates gnupg-agent software-prop
     && apt install -y docker-ce
 
 # Add www-data to docker
-RUN groupadd docker \
-    && usermod -aG docker www-data
+#RUN groupadd docker
+RUN usermod -aG docker www-data
 
 # Used for development. Can be removed from finished project
 RUN apt-get -y install locate nano \
     && updatedb
+
 
 EXPOSE 80 443
 
