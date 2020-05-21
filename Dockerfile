@@ -160,7 +160,6 @@ RUN usermod -aG docker www-data
 RUN apt-get -y install locate nano \
     && updatedb
 
-
 EXPOSE 80 443
 
 CMD ["bash", "/srv/mcweb/McWeb/scripts/docker-entry.sh"]

@@ -50,6 +50,7 @@ class SimRun(Model):
     scanpoints = PositiveIntegerField(default=1)
     gravity = BooleanField(default=False)
     params_str = CharField(max_length=1000)
+    runremote = BooleanField(default=False)
 
     force_run = BooleanField(default=False)
     enable_cachefrom = BooleanField(default=False)

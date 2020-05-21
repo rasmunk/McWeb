@@ -584,9 +584,9 @@ def threadwork(simrun, semaphore):
         # check for existing, similar simruns for reuse
         if simrun.force_run or not cache_check(simrun):
 
-            remote = True
+            _log('runremote: %s' % simrun.runremote)
 
-            if remote:
+            if simrun.runremote:
                 # init processing
                 docker_init_processing(simrun)
 
