@@ -77,10 +77,10 @@ RUN cd /srv/mcweb \
     && echo pip install uwsgi >> mcvenv_finishup \
     && sudo -H -u www-data bash mcvenv_finishup
 
-# Pick and pull the STABLE branch
-RUN cd /srv/mcweb/McWeb \
-    && sudo -H -u www-data git checkout MCWEB_STABLE_2.0 \
-    && sudo -H -u www-data git pull
+## Pick and pull the STABLE branch
+#RUN cd /srv/mcweb/McWeb \
+#    && sudo -H -u www-data git checkout MCWEB_STABLE_2.0 \
+#    && sudo -H -u www-data git pull
 
 RUN cd /srv/mcweb \
     && ln -sf /srv/mcweb/McWeb/scripts/uwsgi_mcweb /etc/init.d/uwsgi_mcweb \
