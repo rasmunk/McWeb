@@ -474,6 +474,7 @@ def docker_init_processing(simrun):
 
     init_processing(simrun)
 
+    # Get relevant component files
     instr_filename = '%s/%s.instr' % (simrun.data_folder, simrun.instr_displayname)
     with open(instr_filename) as instr_file:
         instr_data = instr_file.read()
@@ -512,6 +513,37 @@ def docker_init_processing(simrun):
             p.wait()
         else:
             _log('Component %s does not exist locally, using pre-defined version' % component)
+
+    # Copy additional data files
+    extrafiles = simrun.extrafiles
+    copyall = simrun.copyall
+    if copyall:
+        _log('Copying all additional local files.')
+
+        source_path = os.path.join('sim', simrun.group_name)
+        onlyfiles = [filename for filename in os.listdir(source_path)
+                     if os.path.isfile(os.path.join(source_path, filename))
+                     and not filename.endswith('.instr')
+                     and not filename.endswith('.comp')]
+
+        for filename in onlyfiles:
+            target_path = os.path.join(simrun.data_folder, filename)
+            p = subprocess.Popen(['cp', '-p', os.path.join(source_path, filename), target_path])
+            p.wait()
+
+        _log('Copied additional files: %s' % onlyfiles)
+
+    elif extrafiles:
+        _log('Copying defined additional files: %s' % extrafiles)
+
+        for filename in extrafiles:
+            source_path = os.path.join('sim', simrun.group_name, filename)
+            target_path = os.path.join(simrun.data_folder, filename)
+            if os.path.exists(source_path) and os.path.isfile(source_path):
+                p = subprocess.Popen(['cp', '-p', os.path.join(source_path, filename), target_path])
+                p.wait()
+            else:
+                _log('Could not copy file: %s' % filename)
 
 
 def check_age(simrun, max_mins):

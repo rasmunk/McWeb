@@ -51,6 +51,8 @@ class SimRun(Model):
     gravity = BooleanField(default=False)
     params_str = CharField(max_length=1000)
     runremote = BooleanField(default=False)
+    copyall = BooleanField(default=False)
+    extrafiles = CharField(max_length=2000, default='[]')
 
     force_run = BooleanField(default=False)
     enable_cachefrom = BooleanField(default=False)
@@ -87,7 +89,15 @@ class SimRun(Model):
     @data_files.setter
     def data_files(self, df):
         self.data_files_str = json.dumps(df)
-    
+
+    @property
+    def extrafiles(self):
+        return json.loads(self.extrafiles)
+
+    @extrafiles.setter
+    def extrafiles(self, ef):
+        self.extrafiles = json.dumps(ef)
+
     @property
     def params(self):
         return json.loads(self.params_str)

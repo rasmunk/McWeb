@@ -141,7 +141,14 @@ def instrument_post(req):
     seed = form.get('seed')
     gravity = bool(form.get('gravity'))
     runremote = bool(form.get('runremote'))
+    copyall = bool(form.get('copyall'))
     recalc = bool(form.get('force_recalc'))
+
+    extrafiles_str = form.get('extrafiles')
+    for char in ' \n\t':
+        extrafiles_str = extrafiles_str.replace(char, ' ')
+    extrafiles_str = ' '.join(extrafiles_str.split())
+    extrafiles = extrafiles_str.split(' ')
 
     params_default = json.loads(form.get('params_jsonified'))
     params=[]
@@ -151,9 +158,9 @@ def instrument_post(req):
         params.append([p[0], val])
     
     simrun = SimRun(group_name=group_name, instr_displayname=instr_displayname, 
-                    owner_username=owner_username,
-                    neutrons=neutrons, scanpoints=scanpoints, seed=seed, gravity=gravity,
-                    params=params, force_run=recalc, runremote=runremote)
+                    owner_username=owner_username, neutrons=neutrons, scanpoints=scanpoints,
+                    seed=seed, gravity=gravity, params=params, force_run=recalc,
+                    runremote=runremote, copyall=copyall, extrafiles=extrafiles)
     simrun.save()
     return redirect('simrun', sim_id=simrun.id)
 
