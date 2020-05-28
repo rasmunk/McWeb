@@ -52,7 +52,7 @@ class SimRun(Model):
     params_str = CharField(max_length=1000)
     runremote = BooleanField(default=False)
     copyall = BooleanField(default=False)
-    extrafiles = CharField(max_length=2000, default='[]')
+    extrafiles_str = CharField(max_length=2000, default='[]')
 
     force_run = BooleanField(default=False)
     enable_cachefrom = BooleanField(default=False)
@@ -92,11 +92,11 @@ class SimRun(Model):
 
     @property
     def extrafiles(self):
-        return json.loads(self.extrafiles)
+        return json.loads(self.extrafiles_str)
 
     @extrafiles.setter
     def extrafiles(self, ef):
-        self.extrafiles = json.dumps(ef)
+        self.extrafiles_str = json.dumps(ef)
 
     @property
     def params(self):

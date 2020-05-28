@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='simrun',
-            name='extrafiles',
+            name='extrafiles_str',
             field=models.CharField(default=b'[]', max_length=2000)
         )
     ]
