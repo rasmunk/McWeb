@@ -38,7 +38,6 @@ def maketar(simrun):
     
 def plot_file(f, log=False):
     cmd = '%s %s' % (MCPLOT_CMD, f)
-    _log('DM - plotting file: %s, with command: %s' % (f, cmd))
     if log:
         cmd = '%s %s' % (MCPLOT_LOGCMD,f)
     process = subprocess.Popen(cmd,
@@ -52,8 +51,6 @@ def plot_file(f, log=False):
         else:    
             os.rename(f + '.png',os.path.splitext(os.path.splitext(f)[0])[0] + '.png')
 
-    _log('DM stdout: %s' % stdoutdata)
-    _log('DM stderr: %s' % stderrdata)
     return (stdoutdata, stderrdata)
 
 def sweep_zip_gen(f,dirname):
@@ -92,8 +89,6 @@ def mcplot(simrun):
     ''' also spawns monitor zip file creation in case of scan sweep '''
     rename_mcstas_to_mccode(simrun)
     plotfiles_ext = "html" if MCPLOT_USE_HTML_PLOTTER else "png"
-
-    _log('DM - plotfiles_ext: %s' % plotfiles_ext)
 
     try:
         if simrun.scanpoints > 1:
@@ -196,10 +191,6 @@ def mcplot(simrun):
         simrun.plot_files = plot_files
         simrun.plot_files_log = plot_files_log
         simrun.save()
-
-        _log('DM - simrun.data_files: %s' % data_files)
-        _log('DM - simrun.plot_files: %s' % plot_files)
-        _log('DM - simrun.plot_files_log: %s' % plot_files_log)
 
     except Exception as e:
         raise Exception('mcplot fail: %s' % e.__str__())
