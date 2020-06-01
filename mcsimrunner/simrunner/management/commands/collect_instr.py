@@ -116,7 +116,11 @@ def get_instr_params_and_set_affiliation(instr_grp, instr_displayname, instr_obj
             s = s.split('=')
             for l2 in stdoutdata2.splitlines():
                 if  '<' + s[0] in l2:
-                    l2 = l2.split(':')[1]
+                    # Hack to fix incompatible output from previous cmd
+                    if ':' in l2:
+                        l2 = l2.split(':')[1]
+                    else:
+                        l2 = ''
                     try:
                         unit = l2.split('[')[1]
                         unit = unit.split(']')[0]
