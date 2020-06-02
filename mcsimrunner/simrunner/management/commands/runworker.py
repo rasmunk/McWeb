@@ -536,7 +536,6 @@ def docker_init_processing(simrun):
             else:
                 _log('Could not copy file: %s' % filename)
 
-
 def check_age(simrun, max_mins):
     ''' checks simrun age: raises an exception if age is greater than max_mins. (Does not alter object simrun.) '''
     age = simrun.started - simrun.created
