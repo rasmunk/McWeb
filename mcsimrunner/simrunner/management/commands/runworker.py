@@ -20,7 +20,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from simrunner.models import SimRun
 from mcweb.settings import STATIC_URL, SIM_DIR, DATA_DIRNAME, MCRUN_OUTPUT_DIRNAME, MCPLOT_CMD, MCPLOT_LOGCMD, MCPLOT_USE_HTML_PLOTTER
-from mcweb.settings import MPI_PR_WORKER, MAX_THREADS, MCRUN, BASE_DIR
+from mcweb.settings import MPI_PR_WORKER, MAX_THREADS, MCRUN, MXRUN, BASE_DIR
 import mcweb.settings as settings
 from simrunner.generate_static import McStaticDataBrowserGenerator
 
@@ -287,9 +287,20 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
     
 def mcrun(simrun, print_mcrun_output=False):
     ''' runs the simulation associated with simrun '''
+
+    MCCODE = MCRUN
+
+    instr_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.instr'
+
+    # Check if this is McStas or McXtrace by a simple
+    for line in open(instr_file):
+        if re.search('mcxtrace', line, re.IGNORECASE):
+            MCCODE = MXRUN
+            break
+
     # assemble the run command
     gravity = '-g ' if simrun.gravity else ''
-    runstr = MCRUN + ' --mpi=' + str(MPI_PR_WORKER) + " " + gravity + simrun.instr_displayname + '.instr -d ' + MCRUN_OUTPUT_DIRNAME
+    runstr = MCCODE + ' --mpi=' + str(MPI_PR_WORKER) + " " + gravity + simrun.instr_displayname + '.instr -d ' + MCRUN_OUTPUT_DIRNAME
     runstr = runstr + ' -n ' + str(simrun.neutrons)
     if simrun.scanpoints > 1:
         runstr = runstr + ' -N ' + str(simrun.scanpoints)
@@ -330,6 +341,16 @@ def mcrun(simrun, print_mcrun_output=False):
 def docker_mcrun(simrun, print_mcrun_output=False):
     ''' runs the simulation associated with simrun '''
 
+    MCCODE = MCRUN
+
+    instr_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.instr'
+
+    # Check if this is McStas or McXtrace by a simple
+    for line in open(instr_file):
+        if re.search('mcxtrace', line, re.IGNORECASE):
+            MCCODE = MXRUN
+            break
+
     # create empty stdout.txt and stderr.txt files
     f = open('%s/stdout.txt' % simrun.data_folder, 'w+')
     f.close()
@@ -360,7 +381,7 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         cmd = "docker " \
               "exec " \
               "remote_mcweb " \
-              "mcrun " \
+              + MCCODE + " " \
               "/simrun/" + simrun.instr_displayname + ".instr " \
               + gravity \
               + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
@@ -379,6 +400,8 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         comm_to_remote(cmd, simrun)
 
     except Exception as e:
+        _log("Problem encountered whilst running remotely. %s" % e)
+
         # attempt cleanup
         # stop the container
         cmd = "docker stop remote_mcweb"
@@ -419,7 +442,7 @@ def comm_to_remote(cmd, simrun):
 
     if process.returncode != 0:
         simrun_folder = str('/simrun/' + simrun.__str__())
-        raise Exception('Instrument run failure - see %s.' % simrun_folder)
+        raise Exception('Remote instrument run failure - see %s.' % simrun_folder)
 
 def init_processing(simrun):
     ''' creates data folder, copies instr files and updates simrun object '''
