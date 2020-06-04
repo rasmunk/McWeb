@@ -356,19 +356,34 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         # cmd = 'docker exec remote_mcweb groupmod -n www-data tape'
         # comm_to_remote(cmd, simrun)
 
-        # copy data to container
+        # copy data to container, first removing the .c and ..out files so we can ensure re-compiling
+        c_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.c'
+        out_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.out'
+        try:
+            os.remove(c_file)
+            _log("Removed '%s'" % c_file)
+        except Exception as e:
+            _log("Could not remove '%s': %s" % (c_file, e))
+        try:
+            os.remove(out_file)
+            _log("Removed '%s'" % out_file)
+        except Exception as e:
+            _log("Could not remove '%s': %s" % (out_file, e))
+
         cmd = 'docker cp . remote_mcweb:/simrun'
         comm_to_remote(cmd, simrun)
 
-        # execute mcrun
+        # execute mcrun. Note that this should be run in the simrun directory
+        # so that any local file imports still work
         gravity = '-g ' if simrun.gravity else ''
-        cmd = "docker " \
+        cmd = "cd /simrun && " \
+              "docker " \
               "exec " \
               "remote_mcweb " \
               + MCCODE + " " \
-              "/simrun/" + simrun.instr_displayname + ".instr " \
+              + simrun.instr_displayname + ".instr " \
               + gravity \
-              + "-d /simrun/" + MCRUN_OUTPUT_DIRNAME
+              + "-d " + MCRUN_OUTPUT_DIRNAME
         cmd = cmd + ' -n ' + str(simrun.neutrons)
         if simrun.scanpoints > 1:
             cmd = cmd + ' -N ' + str(simrun.scanpoints)
