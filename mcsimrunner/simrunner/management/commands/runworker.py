@@ -357,8 +357,8 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         # comm_to_remote(cmd, simrun)
 
         # copy data to container, first removing the .c and ..out files so we can ensure re-compiling
-        c_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.c'
-        out_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.out'
+        c_file = simrun.data_folder + '/' + simrun.instr_displayname + '.c'
+        out_file = simrun.data_folder + '/' + simrun.instr_displayname + '.out'
         try:
             os.remove(c_file)
             _log("Removed '%s'" % c_file)
@@ -376,10 +376,10 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         # execute mcrun. Note that this should be run in the simrun directory
         # so that any local file imports still work
         gravity = '-g ' if simrun.gravity else ''
-        cmd = "cd /simrun && " \
-              "docker " \
+        cmd = "docker " \
               "exec " \
               "remote_mcweb " \
+              "cd /simrun && " \
               + MCCODE + " " \
               + simrun.instr_displayname + ".instr " \
               + gravity \
