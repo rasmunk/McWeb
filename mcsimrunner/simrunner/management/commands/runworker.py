@@ -288,15 +288,7 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
 def mcrun(simrun, print_mcrun_output=False):
     ''' runs the simulation associated with simrun '''
 
-    MCCODE = MCRUN
-
-    instr_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.instr'
-
-    # Check if this is McStas or McXtrace by a simple
-    for line in open(instr_file):
-        if re.search('mcxtrace', line, re.IGNORECASE):
-            MCCODE = MXRUN
-            break
+    MCCODE = identify_run_type(simrun)
 
     # assemble the run command
     gravity = '-g ' if simrun.gravity else ''
@@ -341,15 +333,7 @@ def mcrun(simrun, print_mcrun_output=False):
 def docker_mcrun(simrun, print_mcrun_output=False):
     ''' runs the simulation associated with simrun '''
 
-    MCCODE = MCRUN
-
-    instr_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.instr'
-
-    # Check if this is McStas or McXtrace by a simple
-    for line in open(instr_file):
-        if re.search('mcxtrace', line, re.IGNORECASE):
-            MCCODE = MXRUN
-            break
+    MCCODE = identify_run_type(simrun)
 
     # create empty stdout.txt and stderr.txt files
     f = open('%s/stdout.txt' % simrun.data_folder, 'w+')
@@ -422,8 +406,24 @@ def docker_mcrun(simrun, print_mcrun_output=False):
 
     _log('data: %s' % simrun.data_folder)
 
+def identify_run_type(simrun):
+    MCCODE = MCRUN
+
+    instr_file = 'sim/' + simrun.group_name + '/' + simrun.instr_displayname + '.instr'
+
+    # Check if this is McStas or McXtrace by a simple
+    for line in open(instr_file):
+        if re.search('mcxtrace', line, re.IGNORECASE):
+            MCCODE = MXRUN
+            break
+
+    if '.pl' in MCCODE:
+        MCCODE = MCCODE.replace('.pl', '')
+
+    return MCCODE
+
 def comm_to_remote(cmd, simrun):
-    _log('running cmd: %s' % cmd)
+    _log('running cmd: %s in directory: %s' % (cmd, simrun.data_folder))
 
     process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE,
