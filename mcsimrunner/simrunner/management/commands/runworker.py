@@ -423,7 +423,7 @@ def identify_run_type(simrun):
     return MCCODE
 
 def comm_to_remote(cmd, simrun):
-    _log('running cmd: %s in directory: %s' % (cmd, simrun.data_folder))
+    _log("running cmd: '%s' in directory: '%s'" % (cmd, simrun.data_folder))
 
     process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE,
