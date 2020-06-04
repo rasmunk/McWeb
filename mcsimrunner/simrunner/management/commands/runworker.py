@@ -378,7 +378,7 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         gravity = '-g ' if simrun.gravity else ''
         cmd = "docker " \
               "exec " \
-              "-w /simrun" \
+              "-w /simrun " \
               "remote_mcweb " \
               + MCCODE + " " \
               + simrun.instr_displayname + ".instr " \
