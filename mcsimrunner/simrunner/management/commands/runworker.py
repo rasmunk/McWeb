@@ -204,7 +204,7 @@ def mcdisplay_webgl(simrun, pout=False):
 
     MCCODE = settings.MCDISPLAY_WEBGL
 
-    instr_file = 'sim/' + instr
+    instr_file = 'sim/' + simrun.group_name + '/' + instr
 
     # Check if this is McStas or McXtrace by a simple
     for line in open(instr_file):
@@ -248,7 +248,7 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
 
         MCCODE = settings.MCDISPLAY
 
-        instr_file = 'sim/' + instr
+        instr_file = 'sim/' + simrun.group_name + '/' + instr
 
         # Check if this is McStas or McXtrace by a simple
         for line in open(instr_file):
