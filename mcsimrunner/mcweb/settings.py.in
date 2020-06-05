@@ -54,6 +54,10 @@ MCPLOT_USE_HTML_PLOTTER = True
 MCDISPLAY = "mcdisplay.pl" # should be mcdisplay.pl from mcstas 2.4
 MCDISPLAY_WEBGL = "mcdisplay-webgl"
 
+MXDISPLAY = "mxdisplay.pl"
+MXDISPLAY_WEBGL = "mxdisplay-webgl"
+
+
 # list of courses for signupper - each entry will appear as a checkbox when generating
 # the signup form using the command "python manage.py signupform"
 COURSES_MANDATORY = [

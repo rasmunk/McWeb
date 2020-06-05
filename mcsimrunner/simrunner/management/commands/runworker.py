@@ -202,6 +202,16 @@ def mcdisplay_webgl(simrun, pout=False):
     dirname = 'mcdisplay'
     instr = '%s.instr' % simrun.instr_displayname
 
+    MCCODE = settings.MCDISPLAY_WEBGL
+
+    instr_file = 'sim/' + instr
+
+    # Check if this is McStas or McXtrace by a simple
+    for line in open(instr_file):
+        if re.search('mcxtrace', line, re.IGNORECASE):
+            MCCODE = settings.MXDISPLAY_WEBGL
+            break
+
     params_str_lst = []
     for p in simrun.params:
         # scan sweep special case - use last scanpoint
@@ -210,7 +220,7 @@ def mcdisplay_webgl(simrun, pout=False):
             p[1] = m.group(1)
         params_str_lst.append('%s=%s' % (p[0], p[1]))
     params_str = ' '.join(params_str_lst)
-    cmd = '%s %s %s --nobrowse --dir=%s' % (settings.MCDISPLAY_WEBGL, instr, params_str, dirname)
+    cmd = '%s %s %s --nobrowse --dir=%s' % (MCCODE, instr, params_str, dirname)
 
     # TODO: inplement --inspect, --first, --last
 
@@ -235,9 +245,19 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
     ''' uses mcdisplay to generate layout.png + VRML file and moves these files to simrun.data_folder '''
     try:
         instr = '%s.instr' % simrun.instr_displayname
-        
-        cmd = '%s -png %s -n1 ' % (settings.MCDISPLAY, instr)
-        vrmlcmd = '%s --format=VRML %s -n1 ' % (settings.MCDISPLAY, instr)
+
+        MCCODE = settings.MCDISPLAY
+
+        instr_file = 'sim/' + instr
+
+        # Check if this is McStas or McXtrace by a simple
+        for line in open(instr_file):
+            if re.search('mcxtrace', line, re.IGNORECASE):
+                MCCODE = settings.MXDISPLAY
+                break
+
+        cmd = '%s -png %s -n1 ' % (MCCODE, instr)
+        vrmlcmd = '%s --format=VRML %s -n1 ' % (MCCODE, instr)
         
         for p in simrun.params:
             s = str(p[1])
