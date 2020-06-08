@@ -225,7 +225,7 @@ def mcdisplay_webgl(simrun, pout=False):
     # TODO: inplement --inspect, --first, --last
 
     # run mcdisplay
-    _log('display: %s' % cmd)
+    _log('display_webgl: %s' % cmd)
     process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -267,7 +267,10 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
                 s = s.split(',')[0]  
             cmd = cmd + ' %s=%s' % (p[0], s)
             vrmlcmd = vrmlcmd + ' %s=%s' % (p[0], s)
-        
+
+        _log('display: %s' % cmd)
+        _log('display_vrml: %s' % vrmlcmd)
+
         # start mcdisplay process, wait
         process = subprocess.Popen(cmd,
                                    stdout=subprocess.PIPE,
@@ -679,9 +682,11 @@ def threadwork(simrun, semaphore):
                 # process
                 mcrun(simrun)
             simrun.enable_cachefrom = True
-
+            # PASSED
             mcdisplay_webgl(simrun)
+            # PASSED - ALSO FAILED
             mcdisplay(simrun)
+            # FAILED
             mcplot(simrun)
 
             # post-processing
