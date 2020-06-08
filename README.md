@@ -9,12 +9,15 @@ Note that a default django superuser is created during the mcweb docker image co
 # Running the stack
 
 To run McWeb, run the following command within the McWeb directory:
-* docker build --no-cache --tag mcweb .
+* docker build -f Dockerfile --no-cache --tag mcweb .
 
 This will build the 'mcweb' docker image. This can then be run in conjunction with the nginx proxy using:
 * docker stack deploy --compose-file docker-compose.yml mcweb-service
 
 Once these two commands have run you should see 2 docker images running with names such as 'mcweb-service_mcweb.1.xp0dznz29ykw1b8vfg30c1whw' and 'mcweb-service_nginx.1.3k8u11q7tflpweyq4kb5upwpe'. Note that the exact names will differ each time the stack is deployed, and that it may take a few moments for both to start
+
+You will also need to buld the McStas-McXtrace container to run remote processing. This is done by running:
+* docker build -f Dockerfile_patchesMcStasMcXtrace --no-cache --tag patches-mcstas-mcxtrace .
 
 # Stopping the stack
 
