@@ -142,8 +142,6 @@ RUN cd /srv/mcweb \
 COPY nginx/mcweb.conf /srv/mcweb/McWeb/scripts/nginx-default
 RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
 
-RUN mkdir /delme
-
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 
