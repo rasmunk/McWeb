@@ -29,10 +29,7 @@ RUN apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev python-vi
 
 RUN apt-get install -y --fix-missing openssh-server
 
-# Download latest version of McWeb repo
-#RUN mkdir -p /srv/mcweb \
-#    && cd /srv/mcweb/ \
-#    && git clone https://github.com/rasmunk/McWeb.git
+# Use this reop as basis for McWeb install
 COPY . /srv/mcweb/McWeb
 
 # Use either above or below, not both
