@@ -206,11 +206,12 @@ def mcdisplay_webgl(simrun, pout=False):
 
     instr_file = 'sim/' + simrun.group_name + '/' + instr
 
-    # Check if this is McStas or McXtrace by a simple
-    for line in open(instr_file):
-        if re.search('mcxtrace', line, re.IGNORECASE):
-            MCCODE = settings.MXDISPLAY_WEBGL
-            break
+    # Remove this for now, generates OOM errors
+    # # Check if this is McStas or McXtrace by a simple
+    # for line in open(instr_file):
+    #     if re.search('mcxtrace', line, re.IGNORECASE):
+    #         MCCODE = settings.MXDISPLAY_WEBGL
+    #         break
 
     params_str_lst = []
     for p in simrun.params:
@@ -250,11 +251,12 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
 
         instr_file = 'sim/' + simrun.group_name + '/' + instr
 
-        # Check if this is McStas or McXtrace by a simple
-        for line in open(instr_file):
-            if re.search('mcxtrace', line, re.IGNORECASE):
-                MCCODE = settings.MXDISPLAY
-                break
+        # Remove this for now, generates OOM errors
+        # # Check if this is McStas or McXtrace by a simple
+        # for line in open(instr_file):
+        #     if re.search('mcxtrace', line, re.IGNORECASE):
+        #         MCCODE = settings.MXDISPLAY
+        #         break
 
         cmd = '%s -png %s -n1 ' % (MCCODE, instr)
         vrmlcmd = '%s --format=VRML %s -n1 ' % (MCCODE, instr)
@@ -681,12 +683,11 @@ def threadwork(simrun, semaphore):
 
                 # process
                 mcrun(simrun)
+
             simrun.enable_cachefrom = True
-            # PASSED
+
             mcdisplay_webgl(simrun)
-            # PASSED - ALSO FAILED
             mcdisplay(simrun)
-            # FAILED
             mcplot(simrun)
 
             # post-processing

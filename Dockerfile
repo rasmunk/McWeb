@@ -29,8 +29,10 @@ RUN apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev python-vi
 
 RUN apt-get install -y --fix-missing openssh-server
 
-# Use this reop as basis for McWeb install
-COPY . /srv/mcweb/McWeb
+# Download latest version of McWeb repo
+RUN mkdir -p /srv/mcweb \
+    && cd /srv/mcweb/ \
+    && git clone https://github.com/rasmunk/McWeb.git
 
 # Use either above or below, not both
 
@@ -139,6 +141,8 @@ RUN cd /srv/mcweb \
 # overwrite nginx defaults
 COPY nginx/mcweb.conf /srv/mcweb/McWeb/scripts/nginx-default
 RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/default
+
+RUN mkdir /delme
 
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh

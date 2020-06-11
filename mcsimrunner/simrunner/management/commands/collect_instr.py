@@ -96,7 +96,7 @@ def get_instr_params_and_set_affiliation(instr_grp, instr_displayname, instr_obj
                                cwd=os.path.join('sim', instr_grp))
     (stdoutdata, stderrdata) = process.communicate()
     if process.returncode != 0:
-        raise Exception('instrument compile error: \n%s\n%s' % (stdoutdata, stderrdata))
+        raise Exception('instrument compile error:\nstdout: \n%s \nstderr:\n%s' % (stdoutdata, stderrdata))
 
     cmd2 = 'mcdoc.pl -t ./' + os.path.basename(instr_displayname)
     process2 = subprocess.Popen(cmd2,
