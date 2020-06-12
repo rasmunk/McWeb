@@ -355,7 +355,7 @@ def mcrun(simrun, print_mcrun_output=False):
     
     _log('data: %s' % simrun.data_folder)
 
-def docker_mcrun(simrun, print_mcrun_output=False):
+def remote_mcrun(simrun, print_mcrun_output=False):
     ''' runs the simulation associated with simrun '''
 
     MCCODE = identify_run_type(simrun)
@@ -429,11 +429,11 @@ def docker_mcrun(simrun, print_mcrun_output=False):
         # attempt cleanup
         # stop the container
         cmd = "docker stop remote_mcweb"
-        comm_to_remote(cmd, simrun)
+        comm_to_remote(cmd, simrun, logging=false)
 
         # remove the container
         cmd = "docker container rm remote_mcweb"
-        comm_to_remote(cmd, simrun)
+        comm_to_remote(cmd, simrun, logging=false)
         raise e
 
     # stop the container
@@ -462,7 +462,7 @@ def identify_run_type(simrun):
 
     return MCCODE
 
-def comm_to_remote(cmd, simrun):
+def comm_to_remote(cmd, simrun, logging=True):
     _log("running cmd: '%s' in directory: '%s'" % (cmd, simrun.data_folder))
 
     process = subprocess.Popen(cmd,
@@ -473,12 +473,13 @@ def comm_to_remote(cmd, simrun):
     # TODO: implement a timeout (max simulation time)
     (stdout, stderr) = process.communicate()
 
-    o = open('%s/stdout.txt' % simrun.data_folder, 'w')
-    o.write(stdout)
-    o.close()
-    e = open('%s/stderr.txt' % simrun.data_folder, 'w')
-    e.write(stderr)
-    e.close()
+    if logging:
+        o = open('%s/stdout.txt' % simrun.data_folder, 'w')
+        o.write(stdout)
+        o.close()
+        e = open('%s/stderr.txt' % simrun.data_folder, 'w')
+        e.write(stderr)
+        e.close()
 
     if process.returncode != 0:
         simrun_folder = str('/simrun/' + simrun.__str__())
@@ -520,13 +521,9 @@ def init_processing(simrun):
     except Exception as e:
         raise Exception('init_processing: %s (%s)' % (type(e).__name__, e.__str__()))
 
-def docker_init_processing(simrun):
-    '''calls init_processing but also copies over all component definitions
-    as they will be need to be sent to the remote container'''
-    #TODO improve this by only copying those component definitons that have
-    # been changed/added
-
-    init_processing(simrun)
+def gather_files(simrun):
+    '''copies over all component definitions and additional data files as
+    they will be needed for processing'''
 
     # Get relevant component files
     instr_filename = '%s/%s.instr' % (simrun.data_folder, simrun.instr_displayname)
@@ -671,17 +668,13 @@ def threadwork(simrun, semaphore):
 
             _log('runremote: %s' % simrun.runremote)
 
+
+            init_processing(simrun)
+            gather_files(simrun)
+
             if simrun.runremote:
-                # init processing
-                docker_init_processing(simrun)
-
-                # process
-                docker_mcrun(simrun)
+                remote_mcrun(simrun)
             else:
-                # init processing
-                init_processing(simrun)
-
-                # process
                 mcrun(simrun)
 
             simrun.enable_cachefrom = True
