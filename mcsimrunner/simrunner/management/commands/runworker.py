@@ -429,11 +429,11 @@ def remote_mcrun(simrun, print_mcrun_output=False):
         # attempt cleanup
         # stop the container
         cmd = "docker stop remote_mcweb"
-        comm_to_remote(cmd, simrun, logging=false)
+        comm_to_remote(cmd, simrun, logging=False)
 
         # remove the container
         cmd = "docker container rm remote_mcweb"
-        comm_to_remote(cmd, simrun, logging=false)
+        comm_to_remote(cmd, simrun, logging=False)
         raise e
 
     # stop the container
