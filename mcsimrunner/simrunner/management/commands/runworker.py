@@ -4,6 +4,7 @@ Based on SimRun model. Updates django db and is implemented as a django command.
 Outputs comprehensive messages to stdout, which can be increased to include
 mcrun, mcdisplay and mcplot stdout and stderr.
 '''
+import corc
 import getpass
 import subprocess
 import os

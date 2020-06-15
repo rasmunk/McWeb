@@ -5,3 +5,7 @@ bootstrap_data/instruments/*/*.c
 bootstrap_data/instruments/*/*.out
 bootstrap_data/instruments/xnovo
 bootstrap_data/simrun_data/
+
+configs-platform/.oci/*.yaml
+configs-platform/.aws/*.yaml
+configs-platform/.corc/*.yaml
