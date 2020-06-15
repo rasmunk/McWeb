@@ -6,6 +6,9 @@ bootstrap_data/instruments/*/*.out
 bootstrap_data/instruments/xnovo
 bootstrap_data/simrun_data/
 
-configs-platform/.oci/*.yaml
-configs-platform/.aws/*.yaml
-configs-platform/.corc/*.yaml
+configs-platform/.oci/config
+configs-platform/.oci/oci_api_key.pem
+configs-platform/.oci/oci_api_key_public.pem
+configs-platform/.aws/config
+configs-platform/.aws/credentials
+configs-platform/.corc/config

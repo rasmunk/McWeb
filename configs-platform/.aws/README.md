@@ -1,3 +1,6 @@
-This directory is used to store the AWS configuration file and the AWS credentials file.
+This directory is used to store the AWS configuration file.
+This should be named 'config.yaml'
 
-These should be named config.yaml and credentials.yaml
+This directory is also used to store AWS login credentials
+
+This shouled be named 'credentials'

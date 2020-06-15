@@ -28,6 +28,26 @@ services:
       - type: volume
         source: instruments
         target: /srv/mcweb/McWeb/mcsimrunner/sim
+    configs:
+      - source: aws_config
+        target: ~/.aws/config
+        mode: 0440
+      - source: oci_config
+        target: ~/.corc/config
+        mode: 0440
+      - source: corc_config
+        target: ~/.oci/config
+        mode: 0440
+    secrets:
+      - source: aws_credentials
+        target: ~/.aws/credentials
+        mode: 0440
+      - source: oci_private_key
+        target: ~/.oci/oci_api_key.pem
+        mode: 0440
+      - source: oci_public_key
+        target: ~/.oci/oci_api_key_public.pem
+        mode: 0440
     extra_hosts:
       - "mcweb.test:127.0.0.1"
 
@@ -41,3 +61,19 @@ volumes:
 networks:
   default:
     attachable: True
+
+configs:
+  aws_config:
+    file: ./configs-platform/.aws/config
+  oci_config:
+    file: ./configs-platform/.oci/config
+  corc_config:
+    file: ./configs-platform/.corc/config
+
+secrets:
+  aws_credentials:
+    file: ./configs-platform/.aws/credentials
+  oci_private_key:
+    file: ./configs-platform/.oci/oci_api_key.pem
+  oci_public_key:
+    file: ./configs-platform/.oci/oci_api_key_public.pem
