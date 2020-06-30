@@ -77,6 +77,9 @@ RUN cd /srv/mcweb \
     && echo pip install uwsgi >> mcvenv_finishup \
     && sudo -H -u www-data bash mcvenv_finishup
 
+RUN apt install -y python3-pip \
+    && pip3 install -I corc
+
 ## Pick and pull the STABLE branch
 #RUN cd /srv/mcweb/McWeb \
 #    && sudo -H -u www-data git checkout MCWEB_STABLE_2.0 \
@@ -96,7 +99,6 @@ RUN echo >> /etc/sudoers \
     && echo "# Allow www-data to restart uwsgi_mcweb service" >> /etc/sudoers \
     && echo "www-data ALL = NOPASSWD: /etc/init.d/uwsgi_mcweb" >> /etc/sudoers \
     && echo "www-data ALL = NOPASSWD: /bin/chown" >> /etc/sudoers
-
 
   # Last setup of uwsgi etc
 RUN echo Resuming setup... \

@@ -16,7 +16,8 @@ import re
 import traceback
 import pyparsing
 
-import corc.oci.job as Job
+# import corc.oci.job as Job
+# import corc.config.config as CorcConfig
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -370,30 +371,65 @@ def remote_mcrun(simrun, print_mcrun_output=False):
 
     _log('running remotely as user: ' + getpass.getuser())
 
-    # Setup mcstas/mcxtrace command
-    gravity = '-g ' if simrun.gravity else ''
-    cmd = "docker " \
-          "exec " \
-          "-w /simrun " \
-          "remote_mcweb " \
-          + MCCODE + " " \
-          + simrun.instr_displayname + ".instr " \
-          + gravity \
-          + "-d " + MCRUN_OUTPUT_DIRNAME
-    cmd = cmd + ' -n ' + str(simrun.neutrons)
-    if simrun.scanpoints > 1:
-        cmd = cmd + ' -N ' + str(simrun.scanpoints)
-    if simrun.seed > 0:
-        cmd = cmd + ' -s ' + str(simrun.seed)
-    for p in simrun.params:
-        cmd = cmd + ' ' + p[0] + '=' + p[1]
-
-    _log('runnable command is: %s' % cmd)
-
     try:
-        corc.c
+        # Setup mcstas/mcxtrace command
+        cmd_args = [simrun.instr_displayname + ".instr"]
+
+        if simrun.gravity:
+            cmd_args.append('-g')
+
+        cmd_args.extend(['-d', MCRUN_OUTPUT_DIRNAME])
+        cmd_args.extend(['-n', str(simrun.neutrons)])
+        if simrun.scanpoints > 1:
+            cmd_args.extend(['-N', str(simrun.scanpoints)])
+        if simrun.seed > 0:
+            cmd_args.extend(['-s', str(simrun.seed)])
+        for p in simrun.params:
+            cmd_args.append(p[0] + '=' + p[1])
+
+        _log('command args are: %s' % cmd_args)
+
+        gravity = '-g ' if simrun.gravity else ''
+        runstr = "corc oci job run " \
+                 + MCCODE \
+                 + " --job-args " \
+                 + gravity \
+                 + "-d " + MCRUN_OUTPUT_DIRNAME \
+                 + ' -n ' + str(simrun.neutrons)
+        if simrun.scanpoints > 1:
+            runstr = runstr + ' -N ' + str(simrun.scanpoints)
+        if simrun.seed > 0:
+            runstr = runstr + ' -s ' + str(simrun.seed)
+        for p in simrun.params:
+            runstr = runstr + ' ' + p[0] + '=' + p[1]
+
+        process = subprocess.Popen(runstr,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=simrun.data_folder)
+
+        (stdout, stderr) = process.communicate()
+
+        o = open('%s/stdout.txt' % simrun.data_folder, 'w')
+        o.write(stdout)
+        o.close()
+        e = open('%s/stderr.txt' % simrun.data_folder, 'w')
+        e.write(stderr)
+        e.close()
+
+        if stderr or not stdout:
+            msg = "Problem encountered whilst running remotely. %s" % stderr
+            _log(msg)
+            raise Exception(msg)
+        else:
+            job_id = stdout
+            _log("Job submitted with ID: '%s'" % job_id)
+
     except Exception as e:
-        _log("Problem encountered whilst running remotely. %s" % e)
+        msg = "Problem encountered whilst running remotely. %s" % e
+        _log(msg)
+        raise Exception(msg)
 
     # -----------------------Remote Docker Execution --------------------------
     # try:
