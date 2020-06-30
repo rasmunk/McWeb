@@ -72,8 +72,8 @@ RUN cd /srv/mcweb \
     && sudo -u www-data cp mcvenv/bin/activate mcvenv_finishup \
     # TODO move these to actual dependencies location
     # additional pip installs required by remote_worker
-    && echo pip install -I pyparsing ply numpy corc >> mcvenv_finishup \
-    && echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
+    && echo pip2 install -I pyparsing ply numpy >> mcvenv_finishup \
+    && echo pip2 install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
     && echo pip install uwsgi >> mcvenv_finishup \
     && sudo -H -u www-data bash mcvenv_finishup
 

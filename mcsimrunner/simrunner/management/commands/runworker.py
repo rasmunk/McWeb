@@ -422,94 +422,34 @@ def remote_mcrun(simrun, print_mcrun_output=False):
             msg = "Problem encountered whilst running remotely. %s" % stderr
             _log(msg)
             raise Exception(msg)
-        else:
-            job_id = stdout
-            _log("Job submitted with ID: '%s'" % job_id)
+
+        job_id = stdout.decode('utf-8')
+        _log("Job submitted with ID: '%s'" % job_id)
+
+        # start querying for job outputs?
+        download_path =
+        runstr = "corc oci job result get --job-meta-name " + job_id + " --job-result-all --storage-download-path " + download_path
+        process = subprocess.Popen(runstr,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=simrun.data_folder)
+
+        (stdout, stderr) = process.communicate()
+
+        o = open('%s/stdout.txt' % simrun.data_folder, 'a')
+        o.write(stdout)
+        o.close()
+        e = open('%s/stderr.txt' % simrun.data_folder, 'a')
+        e.write(stderr)
+        e.close()
 
     except Exception as e:
         msg = "Problem encountered whilst running remotely. %s" % e
         _log(msg)
         raise Exception(msg)
 
-    # -----------------------Remote Docker Execution --------------------------
-    # try:
-    #     # setup remote container
-    #     cmd = 'docker run -it -d --name remote_mcweb patches-mcstas-mcxtrace bash'
-    #     comm_to_remote(cmd, simrun)
-    #
-    #     # # setup users in remote container
-    #     # cmd = 'docker exec remote_mcweb adduser -u 33 -g 33 www-data'
-    #     # comm_to_remote(cmd, simrun)
-    #     #
-    #     # # setup groups in remote container
-    #     # cmd = 'docker exec remote_mcweb groupmod -n www-data tape'
-    #     # comm_to_remote(cmd, simrun)
-    #
-    #     # copy data to container, first removing the .c and ..out files so we can ensure re-compiling
-    #     c_file = simrun.data_folder + '/' + simrun.instr_displayname + '.c'
-    #     out_file = simrun.data_folder + '/' + simrun.instr_displayname + '.out'
-    #     try:
-    #         os.remove(c_file)
-    #         _log("Removed '%s'" % c_file)
-    #     except Exception as e:
-    #         _log("Could not remove '%s': %s" % (c_file, e))
-    #     try:
-    #         os.remove(out_file)
-    #         _log("Removed '%s'" % out_file)
-    #     except Exception as e:
-    #         _log("Could not remove '%s': %s" % (out_file, e))
-    #
-    #     cmd = 'docker cp . remote_mcweb:/simrun'
-    #     comm_to_remote(cmd, simrun)
-    #
-    #     # execute mcrun. Note that this should be run in the simrun directory
-    #     # so that any local file imports still work
-    #     gravity = '-g ' if simrun.gravity else ''
-    #     cmd = "docker " \
-    #           "exec " \
-    #           "-w /simrun " \
-    #           "remote_mcweb " \
-    #           + MCCODE + " " \
-    #           + simrun.instr_displayname + ".instr " \
-    #           + gravity \
-    #           + "-d " + MCRUN_OUTPUT_DIRNAME
-    #     cmd = cmd + ' -n ' + str(simrun.neutrons)
-    #     if simrun.scanpoints > 1:
-    #         cmd = cmd + ' -N ' + str(simrun.scanpoints)
-    #     if simrun.seed > 0:
-    #         cmd = cmd + ' -s ' + str(simrun.seed)
-    #     for p in simrun.params:
-    #         cmd = cmd + ' ' + p[0] + '=' + p[1]
-    #
-    #     comm_to_remote(cmd, simrun)
-    #
-    #     # retrieve data
-    #     cmd = "docker cp remote_mcweb:/simrun/mcstas ./mcstas"
-    #     comm_to_remote(cmd, simrun)
-    #
-    # except Exception as e:
-    #     _log("Problem encountered whilst running remotely. %s" % e)
-    #
-    #     # attempt cleanup
-    #     # stop the container
-    #     cmd = "docker stop remote_mcweb"
-    #     comm_to_remote(cmd, simrun, logging=False)
-    #
-    #     # remove the container
-    #     cmd = "docker container rm remote_mcweb"
-    #     comm_to_remote(cmd, simrun, logging=False)
-    #     raise e
-    #
-    # # stop the container
-    # cmd = "docker stop remote_mcweb"
-    # comm_to_remote(cmd, simrun)
-    #
-    # # remove the container
-    # cmd = "docker container rm remote_mcweb"
-    # comm_to_remote(cmd, simrun)
-    # ---------------------End of Remote Docker Execution----------------------
 
-    _log('data: %s' % simrun.data_folder)
 
 def identify_run_type(simrun):
     MCCODE = MCRUN
