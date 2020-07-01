@@ -5,8 +5,7 @@ service nginx restart
 service cron restart
 
 ## Collect initial instruments
-#cd /srv/mcweb/McWeb/mcsimrunner/
-#python manage.py collect_instr > /srv/mcweb/McWeb/mcsimrunner/static/compile_status.html
+sudo -u www-data /srv/mcweb/McWeb/scripts/update_instr.sh
 
-# Hack to keep this running indefinitely
+# Hack to keep this image running indefinitely
 tail -f /dev/null
