@@ -30,23 +30,23 @@ services:
         target: /srv/mcweb/McWeb/mcsimrunner/sim
     configs:
       - source: aws_config
-        target: ~/.aws/config
+        target: /www-data/.aws/config
         mode: 0440
       - source: oci_config
-        target: ~/.corc/config
+        target: /www-data/.corc/config
         mode: 0440
       - source: corc_config
-        target: ~/.oci/config
+        target: /www-data/.oci/config
         mode: 0440
     secrets:
       - source: aws_credentials
-        target: ~/.aws/credentials
+        target: /www-data/.aws/credentials
         mode: 0440
       - source: oci_private_key
-        target: ~/.oci/oci_api_key.pem
+        target: /www-data/.oci/oci_api_key.pem
         mode: 0440
       - source: oci_public_key
-        target: ~/.oci/oci_api_key_public.pem
+        target: /www-data/.oci/oci_api_key_public.pem
         mode: 0440
     extra_hosts:
       - "mcweb.test:127.0.0.1"

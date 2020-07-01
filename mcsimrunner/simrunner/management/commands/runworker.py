@@ -16,8 +16,6 @@ import re
 import traceback
 import pyparsing
 
-import corc.oci.job as Job
-
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from simrunner.models import SimRun
@@ -32,12 +30,12 @@ class ExitException(Exception):
 
 def maketar(simrun):
     ''' makes the tar-file for download from the status page '''
-    try: 
+    try:
         with tarfile.open(os.path.join(simrun.data_folder, 'simrun.tar.gz'), "w:gz") as tar:
             tar.add(simrun.data_folder, arcname=os.path.basename(simrun.data_folder))
     except:
         raise Exception('tarfile fail')
-    
+
 def plot_file(f, log=False):
     cmd = '%s %s' % (MCPLOT_CMD, f)
     if log:
@@ -50,7 +48,7 @@ def plot_file(f, log=False):
     if os.path.isfile( f + '.png'):
         if log:
             os.rename(f + '.png',os.path.splitext(os.path.splitext(f)[0])[0] + '_log.png')
-        else:    
+        else:
             os.rename(f + '.png',os.path.splitext(os.path.splitext(f)[0])[0] + '.png')
 
     return (stdoutdata, stderrdata)
@@ -61,7 +59,7 @@ def sweep_zip_gen(f,dirname):
     p_zip = os.path.splitext(p)[0] + '.zip'
 
     _log('sweep_zip_gen: %s in %s ' % (p, dirname))
-    
+
     cmd = 'find mcstas/ -name ' + p + '| sort -V | xargs zip -r ' + p_zip
     process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE,
@@ -162,7 +160,7 @@ def mcplot(simrun):
             plot_files = []
             plot_files_log = []
 
-            for f in datfiles: 
+            for f in datfiles:
                 plot_file(f)
 
                 p = os.path.basename(f)
@@ -173,7 +171,7 @@ def mcplot(simrun):
                 plot_files.append(p)
 
             # NOTE: the following only works with mcplot-gnuplot-py
-            for f in datfiles: 
+            for f in datfiles:
                 plot_file(f, log=True)
 
                 l = os.path.basename(f)
@@ -262,13 +260,13 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
 
         cmd = '%s -png %s -n1 ' % (MCCODE, instr)
         vrmlcmd = '%s --format=VRML %s -n1 ' % (MCCODE, instr)
-        
+
         for p in simrun.params:
             s = str(p[1])
             # support for scan sweeps; if a param contains comma, get str before (mcdisplay dont like comma)
             # (NOTE: perhaps better to make a layout.png file for every scan point)
             if ',' in s:
-                s = s.split(',')[0]  
+                s = s.split(',')[0]
             cmd = cmd + ' %s=%s' % (p[0], s)
             vrmlcmd = vrmlcmd + ' %s=%s' % (p[0], s)
 
@@ -285,10 +283,10 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
         process2 = subprocess.Popen(vrmlcmd,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
-                                   shell=True, 
+                                   shell=True,
                                    cwd = simrun.data_folder)
         (stdoutdata2, stderrdata2) = process2.communicate()
-        
+
         if print_mcdisplay_output:
             print(stdoutdata)
             if (stderrdata is not None) and (stderrdata != ''):
@@ -296,22 +294,22 @@ def mcdisplay(simrun, print_mcdisplay_output=False):
         if print_mcdisplay_output:
             print(stdoutdata2)
             if (stderrdata2 is not None) and (stderrdata2 != ''):
-                print(stderrdata2)    
-        
+                print(stderrdata2)
+
         oldfilename = '%s.out.png' % os.path.join(simrun.data_folder, simrun.instr_displayname)
         newfilename = os.path.join(simrun.data_folder, 'layout.png')
         oldwrlfilename = os.path.join(simrun.data_folder,'mcdisplay_commands.wrl')
         newwrlfilename = os.path.join(simrun.data_folder, 'layout.wrl')
-        
+
         os.rename(oldfilename, newfilename)
         os.rename(oldwrlfilename, newwrlfilename)
-        
+
         _log('layout: %s' % newfilename)
         _log('layout: %s' % newwrlfilename)
-        
+
     except Exception as e:
         _log('mcdisplay fail: %s \nwith stderr:      %s \n     stderr_wrml: %s' % (e.__str__(), stderrdata, stderrdata2))
-    
+
 def mcrun(simrun, print_mcrun_output=False):
     ''' runs the simulation associated with simrun '''
 
@@ -327,7 +325,7 @@ def mcrun(simrun, print_mcrun_output=False):
         runstr = runstr + ' -s ' + str(simrun.seed)
     for p in simrun.params:
         runstr = runstr + ' ' + p[0] + '=' + p[1]
-    
+
     # create empty stdout.txt and stderr.txt files
     f = open('%s/stdout.txt' % simrun.data_folder, 'w')
     f.write("no stdout data for: %s" % runstr)
@@ -335,7 +333,7 @@ def mcrun(simrun, print_mcrun_output=False):
     f = open('%s/stderr.txt' % simrun.data_folder, 'w')
     f.write("no stderr data for: %s" % runstr)
     f.close()
-    
+
     _log('running: %s...' % runstr)
     process = subprocess.Popen(runstr,
                                stdout=subprocess.PIPE,
@@ -344,17 +342,17 @@ def mcrun(simrun, print_mcrun_output=False):
                                cwd=simrun.data_folder)
     # TODO: implement a timeout (max simulation time)
     (stdout, stderr) = process.communicate()
-    
+
     o = open('%s/stdout.txt' % simrun.data_folder, 'w')
     o.write(stdout)
     o.close()
     e = open('%s/stderr.txt' % simrun.data_folder, 'w')
     e.write(stderr)
     e.close()
-    
+
     if process.returncode != 0:
         raise Exception('Instrument run failure - see %s.' % simrun.data_folder )
-    
+
     _log('data: %s' % simrun.data_folder)
 
 def remote_mcrun(simrun, print_mcrun_output=False):
@@ -370,110 +368,85 @@ def remote_mcrun(simrun, print_mcrun_output=False):
 
     _log('running remotely as user: ' + getpass.getuser())
 
-    # Setup mcstas/mcxtrace command
-    gravity = '-g ' if simrun.gravity else ''
-    cmd = "docker " \
-          "exec " \
-          "-w /simrun " \
-          "remote_mcweb " \
-          + MCCODE + " " \
-          + simrun.instr_displayname + ".instr " \
-          + gravity \
-          + "-d " + MCRUN_OUTPUT_DIRNAME
-    cmd = cmd + ' -n ' + str(simrun.neutrons)
-    if simrun.scanpoints > 1:
-        cmd = cmd + ' -N ' + str(simrun.scanpoints)
-    if simrun.seed > 0:
-        cmd = cmd + ' -s ' + str(simrun.seed)
-    for p in simrun.params:
-        cmd = cmd + ' ' + p[0] + '=' + p[1]
-
-    _log('runnable command is: %s' % cmd)
-
     try:
-        corc.c
+        # Setup mcstas/mcxtrace command
+        cmd_args = [simrun.instr_displayname + ".instr"]
+
+        if simrun.gravity:
+            cmd_args.append('-g')
+
+        cmd_args.extend(['-d', MCRUN_OUTPUT_DIRNAME])
+        cmd_args.extend(['-n', str(simrun.neutrons)])
+        if simrun.scanpoints > 1:
+            cmd_args.extend(['-N', str(simrun.scanpoints)])
+        if simrun.seed > 0:
+            cmd_args.extend(['-s', str(simrun.seed)])
+        for p in simrun.params:
+            cmd_args.append(p[0] + '=' + p[1])
+
+        _log('command args are: %s' % cmd_args)
+
+        gravity = '-g ' if simrun.gravity else ''
+        runstr = "corc oci job run " \
+                 + MCCODE \
+                 + " --job-args " \
+                 + gravity \
+                 + "-d " + MCRUN_OUTPUT_DIRNAME \
+                 + ' -n ' + str(simrun.neutrons)
+        if simrun.scanpoints > 1:
+            runstr = runstr + ' -N ' + str(simrun.scanpoints)
+        if simrun.seed > 0:
+            runstr = runstr + ' -s ' + str(simrun.seed)
+        for p in simrun.params:
+            runstr = runstr + ' ' + p[0] + '=' + p[1]
+
+        process = subprocess.Popen(runstr,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=simrun.data_folder)
+
+        (stdout, stderr) = process.communicate()
+
+        o = open('%s/stdout.txt' % simrun.data_folder, 'w')
+        o.write(stdout)
+        o.close()
+        e = open('%s/stderr.txt' % simrun.data_folder, 'w')
+        e.write(stderr)
+        e.close()
+
+        if stderr or not stdout:
+            msg = "Problem encountered whilst running remotely. %s" % stderr
+            _log(msg)
+            raise Exception(msg)
+
+        job_id = stdout.decode('utf-8')
+        _log("Job submitted with ID: '%s'" % job_id)
+
+        # start querying for job outputs?
+        download_path = simrun.data_folder
+        runstr = "corc oci job result get --job-meta-name " + job_id + " --job-result-all --storage-download-path " + download_path
+        process = subprocess.Popen(runstr,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=simrun.data_folder)
+
+        (stdout, stderr) = process.communicate()
+
+        o = open('%s/stdout.txt' % simrun.data_folder, 'a')
+        o.write(stdout)
+        o.close()
+        e = open('%s/stderr.txt' % simrun.data_folder, 'a')
+        e.write(stderr)
+        e.close()
+
     except Exception as e:
-        _log("Problem encountered whilst running remotely. %s" % e)
+        msg = "Problem encountered whilst running remotely. %s" % e
+        _log(msg)
+        raise Exception(msg)
 
-    # -----------------------Remote Docker Execution --------------------------
-    # try:
-    #     # setup remote container
-    #     cmd = 'docker run -it -d --name remote_mcweb patches-mcstas-mcxtrace bash'
-    #     comm_to_remote(cmd, simrun)
-    #
-    #     # # setup users in remote container
-    #     # cmd = 'docker exec remote_mcweb adduser -u 33 -g 33 www-data'
-    #     # comm_to_remote(cmd, simrun)
-    #     #
-    #     # # setup groups in remote container
-    #     # cmd = 'docker exec remote_mcweb groupmod -n www-data tape'
-    #     # comm_to_remote(cmd, simrun)
-    #
-    #     # copy data to container, first removing the .c and ..out files so we can ensure re-compiling
-    #     c_file = simrun.data_folder + '/' + simrun.instr_displayname + '.c'
-    #     out_file = simrun.data_folder + '/' + simrun.instr_displayname + '.out'
-    #     try:
-    #         os.remove(c_file)
-    #         _log("Removed '%s'" % c_file)
-    #     except Exception as e:
-    #         _log("Could not remove '%s': %s" % (c_file, e))
-    #     try:
-    #         os.remove(out_file)
-    #         _log("Removed '%s'" % out_file)
-    #     except Exception as e:
-    #         _log("Could not remove '%s': %s" % (out_file, e))
-    #
-    #     cmd = 'docker cp . remote_mcweb:/simrun'
-    #     comm_to_remote(cmd, simrun)
-    #
-    #     # execute mcrun. Note that this should be run in the simrun directory
-    #     # so that any local file imports still work
-    #     gravity = '-g ' if simrun.gravity else ''
-    #     cmd = "docker " \
-    #           "exec " \
-    #           "-w /simrun " \
-    #           "remote_mcweb " \
-    #           + MCCODE + " " \
-    #           + simrun.instr_displayname + ".instr " \
-    #           + gravity \
-    #           + "-d " + MCRUN_OUTPUT_DIRNAME
-    #     cmd = cmd + ' -n ' + str(simrun.neutrons)
-    #     if simrun.scanpoints > 1:
-    #         cmd = cmd + ' -N ' + str(simrun.scanpoints)
-    #     if simrun.seed > 0:
-    #         cmd = cmd + ' -s ' + str(simrun.seed)
-    #     for p in simrun.params:
-    #         cmd = cmd + ' ' + p[0] + '=' + p[1]
-    #
-    #     comm_to_remote(cmd, simrun)
-    #
-    #     # retrieve data
-    #     cmd = "docker cp remote_mcweb:/simrun/mcstas ./mcstas"
-    #     comm_to_remote(cmd, simrun)
-    #
-    # except Exception as e:
-    #     _log("Problem encountered whilst running remotely. %s" % e)
-    #
-    #     # attempt cleanup
-    #     # stop the container
-    #     cmd = "docker stop remote_mcweb"
-    #     comm_to_remote(cmd, simrun, logging=False)
-    #
-    #     # remove the container
-    #     cmd = "docker container rm remote_mcweb"
-    #     comm_to_remote(cmd, simrun, logging=False)
-    #     raise e
-    #
-    # # stop the container
-    # cmd = "docker stop remote_mcweb"
-    # comm_to_remote(cmd, simrun)
-    #
-    # # remove the container
-    # cmd = "docker container rm remote_mcweb"
-    # comm_to_remote(cmd, simrun)
-    # ---------------------End of Remote Docker Execution----------------------
 
-    _log('data: %s' % simrun.data_folder)
 
 def identify_run_type(simrun):
     MCCODE = MCRUN
@@ -516,12 +489,12 @@ def comm_to_remote(cmd, simrun, logging=True):
 
 def init_processing(simrun):
     ''' creates data folder, copies instr files and updates simrun object '''
-    try: 
+    try:
         simrun.data_folder = os.path.join(os.path.join(STATIC_URL.lstrip('/'), DATA_DIRNAME), simrun.__str__())
         os.mkdir(simrun.data_folder)
         simrun.save()
-        
-        # copy instrument from sim folder to simrun data folder 
+
+        # copy instrument from sim folder to simrun data folder
         instr_source = '%s/%s/%s.instr' % (SIM_DIR, simrun.group_name, simrun.instr_displayname)
         instr = '%s/%s.instr' % (simrun.data_folder, simrun.instr_displayname)
         p = subprocess.Popen(['cp', '-p', instr_source, instr])
@@ -538,7 +511,7 @@ def init_processing(simrun):
         p.wait()
 
         # symlink the contents of sim/datafiles/
-        
+
         allfiles = [f for f in os.listdir('sim/datafiles/') if os.path.isfile(os.path.join('sim/datafiles/', f))]
         if '.gitignore' in allfiles:
             allfiles.remove('.gitignore')
@@ -546,7 +519,7 @@ def init_processing(simrun):
             src = os.path.join('..', '..', '..', 'sim', 'datafiles', f)
             ln = '%s/%s' % (simrun.data_folder, f)
             os.symlink(src, ln)
-        
+
     except Exception as e:
         raise Exception('init_processing: %s (%s)' % (type(e).__name__, e.__str__()))
 
@@ -630,7 +603,7 @@ def check_age(simrun, max_mins):
     age = simrun.started - simrun.created
     age_mins = age.seconds / 60
     if age_mins > max_mins:
-        raise Exception('Age of object has timed out for %s running %s at time %s).' % 
+        raise Exception('Age of object has timed out for %s running %s at time %s).' %
             (simrun.owner_username,simrun.instr_displayname ,simrun.created.strftime("%H:%M:%S_%Y-%m-%d")))
 
 def get_and_start_new_simrun():
@@ -642,7 +615,7 @@ def get_and_start_new_simrun():
 
         simrun.started = timezone.now()
         simrun.save()
-        
+
     return simrun
 
 def cache_check(simrun):
@@ -716,20 +689,20 @@ def threadwork(simrun, semaphore):
             maketar(simrun)
             simrun.complete = timezone.now()
             write_results(simrun)
-        
+
         # finish
         simrun.save()
 
         _log('done (%s secs).' % (simrun.complete - simrun.started).seconds)
-    
+
     except Exception as e:
         simrun.failed = timezone.now()
         simrun.fail_str = e.__str__()
         simrun.save()
-        
+
         if e is ExitException:
             raise e
-        
+
         _log('fail: %s (%s)' % (e.__str__(), type(e).__name__))
         _log_error(e)
 
@@ -739,19 +712,19 @@ def threadwork(simrun, semaphore):
 
 def work(threaded=True, semaphore=None):
     ''' iterates non-started SimRun objects, updates statuses, and calls sim, layout display and plot functions '''
-    
+
     # avoid having two worker threads starting on the same job
     simrun = get_and_start_new_simrun()
 
     while simrun:
         # exceptions raised during the processing block are written to the simrun object as fail, but do not break the processing loop
         try:
-            
+
             if simrun.scanpoints == 1:
                 _log('delegating simrun for %s...' % simrun.instr_displayname)
             else:
                 _log('delegating simrun for %s (%d-point scansweep)...' % (simrun.instr_displayname, simrun.scanpoints))
-            
+
             if threaded:
                 semaphore.acquire() # this will block untill a slot is released
                 t = threading.Thread(target=threadwork, args=(simrun, semaphore))
@@ -760,9 +733,9 @@ def work(threaded=True, semaphore=None):
                 t.start()
             else:
                 threadwork(simrun)
-            
+
             # continue or cause a break iteration
-        
+
         except Exception as e:
             if e is ExitException:
                 raise e
@@ -820,45 +793,45 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         ''' adds the debug run option (run only once) '''
         parser.add_argument('--debug', action='store_true', help="runs work() only once")
-        
+
     def handle(self, *args, **options):
         ''' implements main execution loop and debug run '''
-        # enable logging 
+        # enable logging
         logging.basicConfig(level=logging.INFO,
                     format='%(threadName)-22s: %(message)s',
                     )
-        
-        # ensure data output dir exists: 
+
+        # ensure data output dir exists:
         try:
             data_basedir = os.path.join(STATIC_URL.lstrip('/'), DATA_DIRNAME)
             if not os.path.exists(data_basedir):
                 os.mkdir(data_basedir)
         except:
-            raise ExitException('Could not find or create base data folder, exiting (%s).' % data_basedir)            
-        
+            raise ExitException('Could not find or create base data folder, exiting (%s).' % data_basedir)
+
         # global error handling
         try:
             # debug run
             if options['debug']:
                 work(threaded=False)
                 exit()
-            
+
             # main threaded execution loop:
             sema = threading.BoundedSemaphore(MAX_THREADS)
             _log("created semaphore with %d slots" % MAX_THREADS)
-            
+
             _log("looking for simruns...")
             while True:
                 work(threaded=True, semaphore=sema)
                 time.sleep(1)
-            
+
         # ctr-c exits
         except KeyboardInterrupt:
             print("")
             _log("shutdown requested, exiting...")
             print("")
             print("")
-        
+
         # handle exit-exception (programmatic shutdown)
         except ExitException as e:
             print("")
@@ -869,4 +842,3 @@ class Command(BaseCommand):
         # global exception log to file
         except Exception as e:
             _log_error(e)
-

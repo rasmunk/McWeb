@@ -29,16 +29,16 @@ RUN apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev python-vi
 
 RUN apt-get install -y --fix-missing openssh-server
 
-# Download latest version of McWeb repo
-RUN mkdir -p /srv/mcweb \
-    && cd /srv/mcweb/ \
-    && git clone https://github.com/rasmunk/McWeb.git
+## Download latest version of McWeb repo
+#RUN mkdir -p /srv/mcweb \
+#    && cd /srv/mcweb/ \
+#    && git clone https://github.com/rasmunk/McWeb.git
 
 # Use either above or below, not both
 
-## Get local copy of McWeb repo. This is anticipating being run from McWeb dir
-#RUN mkdir -p /srv/mcweb/McWeb
-#COPY . /srv/mcweb/McWeb
+# Get local copy of McWeb repo. This is anticipating being run from McWeb dir
+RUN mkdir -p /srv/mcweb/McWeb
+COPY . /srv/mcweb/McWeb
 
 # Add nonfree and contrib repo
 RUN sed -i.bak s/main/main\ contrib\ non-free/g /etc/apt/sources.list \
@@ -72,15 +72,15 @@ RUN cd /srv/mcweb \
     && sudo -u www-data cp mcvenv/bin/activate mcvenv_finishup \
     # TODO move these to actual dependencies location
     # additional pip installs required by remote_worker
-    && echo pip install -I pyparsing ply numpy corc >> mcvenv_finishup \
+    && echo pip install -I pyparsing ply numpy >> mcvenv_finishup \
     && echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
     && echo pip install uwsgi >> mcvenv_finishup \
     && sudo -H -u www-data bash mcvenv_finishup
 
-## Pick and pull the STABLE branch
-#RUN cd /srv/mcweb/McWeb \
-#    && sudo -H -u www-data git checkout MCWEB_STABLE_2.0 \
-#    && sudo -H -u www-data git pull
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python3 get-pip.py \
+    && python3 -m pip install corc \
+    && rm get-pip.py
 
 RUN cd /srv/mcweb \
     && ln -sf /srv/mcweb/McWeb/scripts/uwsgi_mcweb /etc/init.d/uwsgi_mcweb \
