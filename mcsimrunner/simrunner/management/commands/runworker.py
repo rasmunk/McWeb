@@ -424,7 +424,7 @@ def remote_mcrun(simrun, print_mcrun_output=False):
         _log("Job submitted with ID: '%s'" % job_id)
 
         # start querying for job outputs?
-        download_path = simrun.data_folder
+        download_path = os.path.join(os.getcwd(), simrun.data_folder)
         runstr = "corc oci job result get --job-meta-name " + job_id + " --job-result-all --storage-download-path " + download_path
         process = subprocess.Popen(runstr,
                                    stdout=subprocess.PIPE,
