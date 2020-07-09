@@ -51,6 +51,7 @@ class SimRun(Model):
     gravity = BooleanField(default=False)
     params_str = CharField(max_length=1000)
     runremote = BooleanField(default=False)
+    skipvisualisation = BooleanField(default=False)
     copyall = BooleanField(default=False)
     extrafiles_str = CharField(max_length=2000, default='[]')
 

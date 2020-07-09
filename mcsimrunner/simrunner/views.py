@@ -141,6 +141,7 @@ def instrument_post(req):
     seed = form.get('seed')
     gravity = bool(form.get('gravity'))
     runremote = bool(form.get('runremote'))
+    skipvisualisation = bool(form.get('skipvisualisation'))
     copyall = bool(form.get('copyall'))
     recalc = bool(form.get('force_recalc'))
 
@@ -160,7 +161,8 @@ def instrument_post(req):
     simrun = SimRun(group_name=group_name, instr_displayname=instr_displayname, 
                     owner_username=owner_username, neutrons=neutrons, scanpoints=scanpoints,
                     seed=seed, gravity=gravity, params=params, force_run=recalc,
-                    runremote=runremote, copyall=copyall, extrafiles=extrafiles)
+                    runremote=runremote, copyall=copyall, extrafiles=extrafiles,
+                    skipvisualisation=skipvisualisation)
     simrun.save()
     return redirect('simrun', sim_id=simrun.id)
 

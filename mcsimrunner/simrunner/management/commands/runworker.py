@@ -675,16 +675,21 @@ def write_results(simrun):
     ''' Generate data browser page. '''
     lin_log_html = 'lin_log_url: impl.'
     gen = McStaticDataBrowserGenerator()
+    _log("setting base context")
     gen.set_base_context({'group_name': simrun.group_name, 'instr_displayname': simrun.instr_displayname,
                           'date_time_completed': timezone.localtime(simrun.complete).strftime("%H:%M:%S, %d/%m-%Y"),
                           'params': simrun.params, 'neutrons': simrun.neutrons, 'seed': simrun.seed, 'scanpoints': simrun.scanpoints,
                           'lin_log_html': lin_log_html,
                           'data_folder': simrun.data_folder})
 
+    _log("setting up to generate browsepages")
+    _log("datafolder: %s" % simrun.data_folder)
+    _log("simrun.plot_files: %s" % simrun.plot_files)
+    _log("simrun.data_files: %s" % simrun.data_files)
     if simrun.scanpoints == 1:
-        gen.generate_browsepage(simrun.data_folder, simrun.plot_files, simrun.data_files)
+        gen.generate_browsepage(simrun.data_folder, simrun.plot_files, simrun.data_files, simrun.skipvisualisation)
     else:
-        gen.generate_browsepage_sweep(simrun.data_folder, simrun.plot_files, simrun.data_files, simrun.scanpoints)
+        gen.generate_browsepage_sweep(simrun.data_folder, simrun.plot_files, simrun.data_files, simrun.scanpoints, simrun.skipvisualisation)
 
 def threadwork(simrun, semaphore):
     ''' thread method for simulation and plotting '''
@@ -697,7 +702,6 @@ def threadwork(simrun, semaphore):
 
             _log('runremote: %s' % simrun.runremote)
 
-
             init_processing(simrun)
             gather_files(simrun)
 
@@ -708,14 +712,20 @@ def threadwork(simrun, semaphore):
 
             simrun.enable_cachefrom = True
 
-            mcdisplay_webgl(simrun)
-            mcdisplay(simrun)
-            mcplot(simrun)
+            if simrun.skipvisualisation:
+                _log('asked to skip visualisation')
+            else:
+                mcdisplay_webgl(simrun)
+                mcdisplay(simrun)
+                mcplot(simrun)
 
             # post-processing
             maketar(simrun)
+            _log('made tar')
             simrun.complete = timezone.now()
+            _log('about to write')
             write_results(simrun)
+            _log('written results')
 
         # finish
         simrun.save()
