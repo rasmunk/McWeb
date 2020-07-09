@@ -1,6 +1,6 @@
 # Dockerised McWeb
 
-This repository is a version of McWeb, running within a Docker container, and able to schedule remote processing of mcstas and mcxtrace processing. Note that this is still under active development, with the aim being that remote processing is done on cloud computing infrastructure rather than other docker containers.
+This repository is a version of McWeb, running within a Docker container, and able to schedule remote processing of mcstas and mcxtrace processing. 
 
 By default McWeb is accessible at 127.0.0.1:80 and is hosted behind an nginx reverse proxy. This can be configured with the file 'McWeb/nginx/nginx-proxy.conf'. McWeb itself can be configured at 'McWeb/nginx/mcweb.conf'.
 
@@ -15,9 +15,6 @@ This will build the 'mcweb' docker image. This can then be run in conjunction wi
 * docker stack deploy --compose-file docker-compose.yml mcweb-service
 
 Once these two commands have run you should see 2 docker images running with names such as 'mcweb-service_mcweb.1.xp0dznz29ykw1b8vfg30c1whw' and 'mcweb-service_nginx.1.3k8u11q7tflpweyq4kb5upwpe'. Note that the exact names will differ each time the stack is deployed, and that it may take a few moments for both to start
-
-You will also need to buld the McStas-McXtrace container to run remote processing. This is done by running:
-* docker build -f Dockerfile_patchesMcStasMcXtrace --no-cache --tag patches-mcstas-mcxtrace .
 
 # Stopping the stack
 
@@ -34,7 +31,9 @@ If everything has hosted correctly you will be greeted with a login screen, you 
 
 You should then be taken to a start screen displaying the 'SANSsimple' instrument which can be run as per any other McWeb deployment.
 
-Note that currently you will need to wait up to 10 minutes after the initial stack deployment for the default instrument to be reachable. This issue is currently being investigated.
+# Configuring remote processing
+
+This McWeb deployment uses the python package 'corc' (https://pypi.org/project/corc/) to schedule processing on remote resources. To do so necessary configurations will need to be defined by a user. Currently this is done outside of the docker container, with the relevant configs mounted from the .aws, .corc, and.oci directories within configs-platform. Brief readmes are included in each directory explaining their role. Different configs may be mounted, though docker-compose.yaml will need to be altered accordingly.
 
 # Adding instrument and component definitions
 

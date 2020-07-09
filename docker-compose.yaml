@@ -30,26 +30,40 @@ services:
         target: /srv/mcweb/McWeb/mcsimrunner/sim
     configs:
       - source: aws_config
-        target: /www-data/.aws/config
+        target: /var/www/.aws/config
+        uid: '33'
+        gid: '33'
         mode: 0440
       - source: oci_config
-        target: /www-data/.corc/config
+        target: /var/www/.oci/config
+        uid: '33'
+        gid: '33'
         mode: 0440
       - source: corc_config
-        target: /www-data/.oci/config
+        target: /var/www/.corc/config
+        uid: '33'
+        gid: '33'
         mode: 0440
     secrets:
       - source: aws_credentials
-        target: /www-data/.aws/credentials
+        target: /var/www/.aws/credentials
+        uid: '33'
+        gid: '33'
         mode: 0440
       - source: oci_private_key
-        target: /www-data/.oci/oci_api_key.pem
+        target: /var/www/.oci/oci_api_key.pem
+        uid: '33'
+        gid: '33'
         mode: 0440
       - source: oci_public_key
-        target: /www-data/.oci/oci_api_key_public.pem
+        target: /var/www/.oci/oci_api_key_public.pem
+        uid: '33'
+        gid: '33'
         mode: 0440
     extra_hosts:
       - "mcweb.test:127.0.0.1"
+    environment:
+      - CORC_CONFIG_FILE='/var/www/.corc/config'
 
 volumes:
   instruments:

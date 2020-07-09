@@ -4,6 +4,7 @@ Based on SimRun model. Updates django db and is implemented as a django command.
 Outputs comprehensive messages to stdout, which can be increased to include
 mcrun, mcdisplay and mcplot stdout and stderr.
 '''
+import json
 import getpass
 import subprocess
 import os
@@ -356,7 +357,9 @@ def mcrun(simrun):
     _log('data: %s' % simrun.data_folder)
 
 def remote_mcrun(simrun):
-    ''' runs the simulation associated with simrun '''
+    '''
+    runs the simulation associated with simrun
+    '''
 
     MCCODE = identify_run_type(simrun)
 
@@ -366,16 +369,15 @@ def remote_mcrun(simrun):
     f = open('%s/stderr.txt' % simrun.data_folder, 'w+')
     f.close()
 
-    _log('running remotely as user: ' + getpass.getuser())
-
+    environment_vars = os.environ
     try:
         # Setup mcstas/mcxtrace command
-        cmd_args = [simrun.instr_displayname + ".instr"]
+        cmd_args = [os.path.join('/tmp/input', simrun.instr_displayname + ".instr")]
 
         if simrun.gravity:
             cmd_args.append('-g')
 
-        cmd_args.extend(['-d', MCRUN_OUTPUT_DIRNAME])
+        cmd_args.extend(['-d', '/tmp/output'])
         cmd_args.extend(['-n', str(simrun.neutrons)])
         if simrun.scanpoints > 1:
             cmd_args.extend(['-N', str(simrun.scanpoints)])
@@ -384,21 +386,27 @@ def remote_mcrun(simrun):
         for p in simrun.params:
             cmd_args.append(p[0] + '=' + p[1])
 
-        _log('command args are: %s' % cmd_args)
+        # _log('command args are: %s' % cmd_args)
 
-        gravity = '-g ' if simrun.gravity else ''
+        absolute_data_path = os.path.join(os.getcwd(), simrun.data_folder)
+
         runstr = "corc oci job run " \
                  + MCCODE \
+                 + " --storage-enable" \
+                 + " --storage-upload-path " \
+                 + absolute_data_path \
                  + " --job-args " \
-                 + gravity \
-                 + "-d " + MCRUN_OUTPUT_DIRNAME \
-                 + ' -n ' + str(simrun.neutrons)
-        if simrun.scanpoints > 1:
-            runstr = runstr + ' -N ' + str(simrun.scanpoints)
-        if simrun.seed > 0:
-            runstr = runstr + ' -s ' + str(simrun.seed)
-        for p in simrun.params:
-            runstr = runstr + ' ' + p[0] + '=' + p[1]
+                 + '\'' + ' '.join(cmd_args) + '\''
+        _log('job runstr is: %s' % runstr)
+
+        # process = subprocess.Popen('oci -h',
+        #                            stdout=subprocess.PIPE,
+        #                            stderr=subprocess.PIPE,
+        #                            shell=True,
+        #                            cwd=simrun.data_folder)
+        # (stdout, stderr) = process.communicate()
+        # _log('testing oci stdout: %s' % stdout)
+        # _log('testing oci stderr: %s' % stderr)
 
         process = subprocess.Popen(runstr,
                                    stdout=subprocess.PIPE,
@@ -415,27 +423,31 @@ def remote_mcrun(simrun):
         e.write(stderr)
         e.close()
 
-        if stderr or not stdout:
-            msg = "Problem encountered whilst running remotely. %s" % stderr
+        try:
+            json_dict = json.loads(stdout.decode('utf-8'))
+            job_id = json_dict['job']['id']
+            _log("Job submitted with ID: '%s'" % job_id)
+
+        except Exception:
+            msg = "Could not retrieve job_id."
             _log(msg)
             raise Exception(msg)
 
-        job_id = stdout.decode('utf-8')
-        _log("Job submitted with ID: '%s'" % job_id)
-
-        pre_copy_contents = os.listdir(simrun.data_folder)
         attempt = 0
         # start querying for job outputs?
         # This will loop infinitely. Put in a timeout?
         while True:
-            # Log attempts and pid, so that if infinitely running should be easier to debug and kill
+            # Log attempts and pid, so that if infinitely running should be
+            # easier to debug and kill
             attempt += 1
-            _log("worker running on pid(%s) is querying(%s). Attempt(%s)" % (os.getpid(), job_id, attempt))
+            _log("worker running on pid(%s) is querying(%s). Attempt(%s)"
+                 % (os.getpid(), job_id, attempt))
             download_path = os.path.join(os.getcwd(), simrun.data_folder)
             runstr = "corc oci job result get" \
                      + " --job-meta-name " + job_id \
-                     + " --job-result-all" \
                      + " --storage-download-path " + download_path
+            _log('data runstr is: %s' % runstr)
+
             process = subprocess.Popen(runstr,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE,
@@ -444,9 +456,28 @@ def remote_mcrun(simrun):
 
             (stdout, stderr) = process.communicate()
 
-            post_copy_contents = os.listdir(simrun.data_folder)
+            if stderr:
+                break
 
-            if pre_copy_contents != post_copy_contents:
+            _log('checking for output...')
+
+            oci_output_path = ''
+            dir_contents = os.listdir(simrun.data_folder)
+            for content in dir_contents:
+                if content.startswith(job_id):
+                    oci_output_path = os.path.join(simrun.data_folder, content)
+
+            if oci_output_path:
+                _log('output exists at: %s' % oci_output_path)
+                outputs = os.listdir(oci_output_path)
+                _log('Got output from oci job: %s' % os.listdir(oci_output_path))
+                os.mkdir(os.path.join(simrun.data_folder, MCRUN_OUTPUT_DIRNAME))
+                for output in outputs:
+                    src_path = os.path.join(oci_output_path, output)
+                    final_path = os.path.join(simrun.data_folder, MCRUN_OUTPUT_DIRNAME, output)
+                    p = subprocess.Popen(['cp', '-p', src_path, final_path])
+                    p.wait()
+                    _log('Copied %s to %s' % (src_path, final_path))
                 break
 
             time.sleep(15)
@@ -457,6 +488,8 @@ def remote_mcrun(simrun):
         e = open('%s/stderr.txt' % simrun.data_folder, 'a')
         e.write(stderr)
         e.close()
+
+        _log('Completed remote running')
 
     except Exception as e:
         msg = "Problem encountered whilst running remotely. %s" % e
@@ -478,29 +511,6 @@ def identify_run_type(simrun):
         MCCODE = MCCODE.replace('.pl', '')
 
     return MCCODE
-
-def comm_to_remote(cmd, simrun, logging=True):
-    _log("running cmd: '%s' in directory: '%s'" % (cmd, simrun.data_folder))
-
-    process = subprocess.Popen(cmd,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               shell=True,
-                               cwd=simrun.data_folder)
-    # TODO: implement a timeout (max simulation time)
-    (stdout, stderr) = process.communicate()
-
-    if logging:
-        o = open('%s/stdout.txt' % simrun.data_folder, 'w')
-        o.write(stdout)
-        o.close()
-        e = open('%s/stderr.txt' % simrun.data_folder, 'w')
-        e.write(stderr)
-        e.close()
-
-    if process.returncode != 0:
-        simrun_folder = str('/simrun/' + simrun.__str__())
-        raise Exception('Remote instrument run failure - see %s.' % simrun_folder)
 
 def init_processing(simrun):
     ''' creates data folder, copies instr files and updates simrun object '''

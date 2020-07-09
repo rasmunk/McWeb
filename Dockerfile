@@ -29,17 +29,6 @@ RUN apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev python-vi
 
 RUN apt-get install -y --fix-missing openssh-server
 
-## Download latest version of McWeb repo
-#RUN mkdir -p /srv/mcweb \
-#    && cd /srv/mcweb/ \
-#    && git clone https://github.com/rasmunk/McWeb.git
-
-# Use either above or below, not both
-
-# Get local copy of McWeb repo. This is anticipating being run from McWeb dir
-RUN mkdir -p /srv/mcweb/McWeb
-COPY . /srv/mcweb/McWeb
-
 # Add nonfree and contrib repo
 RUN sed -i.bak s/main/main\ contrib\ non-free/g /etc/apt/sources.list \
     && apt-get update
@@ -64,6 +53,17 @@ RUN cd /usr/lib/x86_64-linux-gnu \
 RUN update-rc.d apache2 remove
 # RUN service apache2 stop
 
+## Download latest version of McWeb repo
+#RUN mkdir -p /srv/mcweb \
+#    && cd /srv/mcweb/ \
+#    && git clone https://github.com/rasmunk/McWeb.git
+
+# Use either above or below, not both
+
+# Get local copy of McWeb repo. This is anticipating being run from McWeb dir
+RUN mkdir -p /srv/mcweb/McWeb
+COPY . /srv/mcweb/McWeb
+
 RUN sudo chown -R www-data:www-data /srv/mcweb /var/www/
 
 # Bootstrap McWeb via sudo / git
@@ -79,8 +79,10 @@ RUN cd /srv/mcweb \
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3 get-pip.py \
-    && python3 -m pip install corc \
+    && python3 -m pip install --ignore-installed jmespath==0.9.4 cryptography==2.8 six==1.14.0 corc \
     && rm get-pip.py
+
+ENV LANG=C.UTF-8
 
 RUN cd /srv/mcweb \
     && ln -sf /srv/mcweb/McWeb/scripts/uwsgi_mcweb /etc/init.d/uwsgi_mcweb \
@@ -145,16 +147,24 @@ RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/defaul
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 
-# Add docker support
-RUN apt install -y apt-transport-https ca-certificates gnupg-agent software-properties-common \
-    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \
-    && sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" \
-    && apt update \
-    && apt install -y docker-ce
+### OCI command line, used in corc
+#RUN curl -L -O https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
+#RUN chmod 744 install.sh
+#RUN ./install.sh --accept-all-defaults --install-dir /var/www/lib/oracl-cli --exec-dir /var/www/bin --update-path-and-enable-tab-completion
+#RUN chown -R www-data:www-data /var/www
+#
+#ENV LANG=C.UTF-8
 
-# Add www-data to docker
-#RUN groupadd docker
-RUN usermod -aG docker www-data
+## Add docker support
+#RUN apt install -y apt-transport-https ca-certificates gnupg-agent software-properties-common \
+#    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \
+#    && sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" \
+#    && apt update \
+#    && apt install -y docker-ce
+#
+## Add www-data to docker
+##RUN groupadd docker
+#RUN usermod -aG docker www-data
 
 # Used for development. Can be removed from finished project
 RUN apt-get -y install locate nano \
