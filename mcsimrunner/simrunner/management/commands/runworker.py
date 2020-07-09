@@ -372,7 +372,7 @@ def remote_mcrun(simrun):
     environment_vars = os.environ
     try:
         # Setup mcstas/mcxtrace command
-        cmd_args = [os.path.join('/tmp/input', simrun.instr_displayname + ".instr")]
+        cmd_args = [simrun.instr_displayname + ".instr"]
 
         if simrun.gravity:
             cmd_args.append('-g')
@@ -395,6 +395,8 @@ def remote_mcrun(simrun):
                  + " --storage-enable" \
                  + " --storage-upload-path " \
                  + absolute_data_path \
+                 + " --job-working-dir " \
+                 + '/tmp/input' \
                  + " --job-args " \
                  + '\'' + ' '.join(cmd_args) + '\''
         _log('job runstr is: %s' % runstr)
