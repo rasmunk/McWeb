@@ -24,7 +24,6 @@ services:
           - mcweb
           - mcweb.test
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - type: volume
         source: instruments
         target: /srv/mcweb/McWeb/mcsimrunner/sim
