@@ -37,7 +37,9 @@ This McWeb deployment uses the python package 'corc' (https://pypi.org/project/c
 
 # Adding instrument and component definitions
 
-To add additional instrument definitions to McWeb they can be added to the 'McWeb/bootstrap_data/instruments' directory. First they should be sorted into groups for ease of use. The default group is 'intro-ns'. Any new instruments or groups can be added here, along with any supporting files or components alongside the relevant instrument file. This is as this directory is mounted into the mcweb container and is the source for instrument files used to construct the McWeb interface. Note that it may take up to 10 minutes from creating a new instrument here for it to appear in McWeb.
+To add additional instrument definitions to McWeb they can be added to the 'McWeb/bootstrap_data/instruments' directory. Note that the 'bootstrap_data' folder and its contents MUST be owned by the user 'www-data'. This is as it is used by McWeb internally, running as www-data. Any files not owned by www-data will not be added to the McWeb interface, and may crash the system.
+
+Instruments added here should be sorted into groups for ease of use. The default group is 'intro-ns'. Any new instruments or groups can be added here, along with any supporting files or components alongside the relevant instrument file. This is as this directory is mounted into the mcweb container and is the source for instrument files used to construct the McWeb interface. Note that it may take up to 10 minutes from creating a new instrument here for it to appear in McWeb.
 
 Do not delete the 'intro-ns' group directory, or the 'SANSsimple.instr' file within it as this is the default landing instrument for the McWeb interface.
 
