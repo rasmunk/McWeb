@@ -1,9 +1,0 @@
-from nielsbohr/mcstas-mcxtrace
-
-# dev tools, can be removed once deployed
-RUN yum -y install less nano sudo mlocate
-RUN updatedb
-
-# setup the users and groups for mcweb interaction
-RUN adduser -u 33 -g 33 www-data
-RUN groupmod -n www-data tape
