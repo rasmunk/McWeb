@@ -1,20 +1,6 @@
 version: '3.7'
 
 services:
-  nginx:
-    image: jwilder/nginx-proxy:latest
-    hostname: nginx
-    depends_on:
-      - mcweb
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx-proxy.conf:/etc/nginx/conf.d/mcweb.conf:ro
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-    networks:
-      - default
-
   mcweb:
     image: nielsbohr/mcweb:latest
     hostname: mcweb
@@ -23,6 +9,9 @@ services:
         aliases:
           - mcweb
           - mcweb.test
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - type: volume
         source: instruments
@@ -59,8 +48,8 @@ services:
         uid: '33'
         gid: '33'
         mode: 0440
-    extra_hosts:
-      - "mcweb.test:127.0.0.1"
+#    extra_hosts:
+#      - "mcweb.test:127.0.0.1"
     environment:
       - CORC_CONFIG_FILE='/var/www/.corc/config'
 
