@@ -16,7 +16,7 @@ services:
       - default
 
   mcweb:
-    image: mcweb:latest
+    image: nielsbohr/mcweb:latest
     hostname: mcweb
     networks:
       default:

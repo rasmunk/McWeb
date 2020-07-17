@@ -4,10 +4,10 @@ TAG=edge
 
 .PHONY: build
 
-all: clean build test
+all: clean build
 
 build:
-	docker build -t $(OWNER)/$(IMAGE):$(TAG) hub/
+	docker build -t $(OWNER)/$(IMAGE):$(TAG) .
 
 clean:
 	docker rmi -f $(OWNER)/$(IMAGE):$(TAG)
