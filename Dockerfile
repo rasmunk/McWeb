@@ -51,14 +51,6 @@ RUN cd /usr/lib/x86_64-linux-gnu \
 
 # Remove stop apache2 from being default webserver
 RUN update-rc.d apache2 remove
-# RUN service apache2 stop
-
-## Download latest version of McWeb repo
-#RUN mkdir -p /srv/mcweb \
-#    && cd /srv/mcweb/ \
-#    && git clone https://github.com/rasmunk/McWeb.git
-
-# Use either above or below, not both
 
 # Get local copy of McWeb repo. This is anticipating being run from McWeb dir
 RUN mkdir -p /srv/mcweb/McWeb
@@ -98,7 +90,6 @@ RUN echo >> /etc/sudoers \
     && echo "# Allow www-data to restart uwsgi_mcweb service" >> /etc/sudoers \
     && echo "www-data ALL = NOPASSWD: /etc/init.d/uwsgi_mcweb" >> /etc/sudoers \
     && echo "www-data ALL = NOPASSWD: /bin/chown" >> /etc/sudoers
-
 
   # Last setup of uwsgi etc
 RUN echo Resuming setup... \
@@ -147,27 +138,8 @@ RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/defaul
 # Copy in docker entry script as it'll have been deleted my the pull from McWeb-stable
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 
-### OCI command line, used in corc
-#RUN curl -L -O https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
-#RUN chmod 744 install.sh
-#RUN ./install.sh --accept-all-defaults --install-dir /var/www/lib/oracl-cli --exec-dir /var/www/bin --update-path-and-enable-tab-completion
-#RUN chown -R www-data:www-data /var/www
-#
-#ENV LANG=C.UTF-8
-
-## Add docker support
-#RUN apt install -y apt-transport-https ca-certificates gnupg-agent software-properties-common \
-#    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \
-#    && sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" \
-#    && apt update \
-#    && apt install -y docker-ce
-#
-## Add www-data to docker
-##RUN groupadd docker
-#RUN usermod -aG docker www-data
-
 # Used for development. Can be removed from finished project
-RUN apt-get -y install locate nano \
+RUN apt-get -y install locate nano iputils-ping dnsutils \
     && updatedb
 
 EXPOSE 80 443
