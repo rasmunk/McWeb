@@ -1,5 +1,4 @@
 .idea/
-certs/
 
 bootstrap_data/instruments/*/*.c
 bootstrap_data/instruments/*/*.out

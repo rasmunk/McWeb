@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-# An Nginx proxy can be setp using the following definitions.
+# An Nginx proxy can be setup using the following definitions.
 #  nginx:
 #    image: jwilder/nginx-proxy:latest
 #    hostname: nginx
