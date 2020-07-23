@@ -14,6 +14,8 @@ ARG MPI=1
 # Get required commands for script
 RUN apt-get update
 
+RUN apt-get install -y adwaita-icon-theme
+
 RUN apt-get install -y git
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
@@ -39,6 +41,7 @@ RUN cd /etc/apt/sources.list.d/ \
     && apt-get update
 
 # Base packages for McCode + MPI
+RUN wget http://archive.ubuntu.com/ubuntu/pool/main/a/adwaita-icon-theme/adwaita-icon-theme_3.28.0-1ubuntu1_all.deb
 RUN apt-get -y install -y mcstas-suite-perl mcstas-suite-python mcxtrace-suite-perl mcxtrace-suite-python openmpi-bin libopenmpi-dev
 
 # Ensure we use mcdoc.pl rather than python version
@@ -62,8 +65,6 @@ RUN sudo chown -R www-data:www-data /srv/mcweb /var/www/
 RUN cd /srv/mcweb \
     && sudo -H -u www-data virtualenv mcvenv \
     && sudo -u www-data cp mcvenv/bin/activate mcvenv_finishup \
-    # TODO move these to actual dependencies location
-    # additional pip installs required by remote_worker
     && echo pip install -I pyparsing ply numpy >> mcvenv_finishup \
     && echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
     && echo pip install uwsgi >> mcvenv_finishup \

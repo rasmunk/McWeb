@@ -62,11 +62,6 @@ services:
         uid: '33'
         gid: '33'
         mode: 0440
-      - source: oci_public_key
-        target: /var/www/.oci/oci_api_key_public.pem
-        uid: '33'
-        gid: '33'
-        mode: 0440
     environment:
       - CORC_CONFIG_FILE='/var/www/.corc/config'
       - OCI_CONFIG_FILE='/var/www/.oci/config'
@@ -100,5 +95,3 @@ secrets:
     file: ./configs-platform/.aws/credentials
   oci_private_key:
     file: ./configs-platform/.oci/oci_api_key.pem
-  oci_public_key:
-    file: ./configs-platform/.oci/oci_api_key_public.pem
