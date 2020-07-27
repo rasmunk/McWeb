@@ -16,7 +16,9 @@ if [ "$OLD" == $NEW ]; then
 elif [ "$OLD" != $NEW ]; then
 	echo sim folder checksum has changed, running collectinstr \(output sent to url /static/compile_status.html\) ...
 	echo
-	python manage.py collect_instr > /srv/mcweb/McWeb/mcsimrunner/static/compile_status.html
+	echo claiming ownership of all instrument files > /srv/mcweb/McWeb/mcsimrunner/static/compile_status.html
+	chown -R www-data:www-data sim/ >> /srv/mcweb/McWeb/mcsimrunner/static/compile_status.html
+	python manage.py collect_instr >> /srv/mcweb/McWeb/mcsimrunner/static/compile_status.html
 	echo creating new checksum file...
 	rm checksum
 	find sim/ -type f -exec md5sum {} \; | sort -k 34 | md5sum | cut -d' ' -f1 > checksum
