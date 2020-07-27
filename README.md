@@ -2,19 +2,19 @@
 
 This repository is a version of McWeb, running within a Docker container, and able to schedule remote processing of mcstas and mcxtrace processing. 
 
-By default McWeb is accessible at 127.0.0.1:80 and is hosted behind an nginx reverse proxy. This can be configured with the file 'McWeb/nginx/nginx-proxy.conf'. McWeb itself can be configured at 'McWeb/nginx/mcweb.conf'.
+By default McWeb is accessible at 127.0.0.1:80. If required, an nginx reverse proxy is included though is not used by default. McWeb itself can be configured at 'McWeb/nginx/mcweb.conf'.
 
 Note that a default django superuser is created during the mcweb docker image construction. This can be configured using the variables 'DJANGO_PASSWORD', 'DJANGO_USER' and 'DJANGO_EMAIL' within 'McWeb/Dockerfile'.
 
 # Running the stack
 
-To run McWeb, run the following command within the McWeb directory:
+To run McWeb, run the following command within the McWeb directory after updating the django admin login details:
 * docker build -f Dockerfile --no-cache --tag mcweb .
 
-This will build the 'mcweb' docker image. This can then be run in conjunction with the nginx proxy using:
-* docker stack deploy --compose-file docker-compose.yml mcweb-service
+This will build the 'mcweb' docker image. This can then be run using:
+* docker stack deploy --compose-file docker-compose.yaml mcweb-service
 
-Once these two commands have run you should see 2 docker images running with names such as 'mcweb-service_mcweb.1.xp0dznz29ykw1b8vfg30c1whw' and 'mcweb-service_nginx.1.3k8u11q7tflpweyq4kb5upwpe'. Note that the exact names will differ each time the stack is deployed, and that it may take a few moments for both to start
+Once these two commands have run you should see 1 docker image running with a name such as 'mcweb-service_mcweb.1.xp0dznz29ykw1b8vfg30c1whw'. Note that the exact name will differ each time the stack is deployed, and that it may take a few moments to start
 
 # Stopping the stack
 
@@ -29,7 +29,7 @@ On the host machine you can now access McWeb through an internet browser by navi
 
 If everything has hosted correctly you will be greeted with a login screen, you can login as the superuser defined in 'McWeb/Dockerfile'. By default this is 'djangoadmin' with password 'Passw0rd123'. This should obviously be changed for any deployment implementation.
 
-You should then be taken to a start screen displaying the 'SANSsimple' instrument which can be run as per any other McWeb deployment.
+You should then be taken to a start screen displaying the 'SANSsimple' instrument which can be run as per any other McWeb deployment. This is the default landing page, so you should not delete the SANSsimple.instr.
 
 # Configuring remote processing
 
@@ -47,9 +47,9 @@ Do not delete the 'intro-ns' group directory, or the 'SANSsimple.instr' file wit
 
 A few small additions have been made to this implementation of McWeb. 
 
-A toggle option has been added to the Runtime configuration for remote processing. Currently this will schedule the simulation processing within an external docker container. This is a placeholder from integration with cloud based computing scheduling
+A toggle option has been added to the Runtime configuration for remote processing. This will schedule the simulation processing within an external cloud infrastructure, as defined by 'configs-platform/.corc/config'.
 
-Related to the remote processing, additional options for copying additional files to the remote processing have been added. Users can either define all additional files required for a simulation run within a text field, or can makr that all non-.instr and non-.comp file in the instrument group directory will be copied accross.
+Related to the remote processing, additional options for copying additional files to the remote processing have been added. Users can either define all additional files required for a simulation run within a text field, or can mark that all non-.instr and non-.comp file in the instrument group directory will be copied accross.
 
 # McWeb
 
