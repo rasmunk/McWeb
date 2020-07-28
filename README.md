@@ -1,10 +1,10 @@
 # Dockerised McWeb
 
-This repository is a version of McWeb, running within a Docker container, and able to schedule remote processing of mcstas and mcxtrace processing. 
+This repository is a version of McWeb, running within a Docker container, and able to schedule remote processing of McStas and McXtrace processing. 
 
 By default McWeb is accessible at 127.0.0.1:80. If required, an nginx reverse proxy is included though is not used by default. McWeb itself can be configured at 'McWeb/nginx/mcweb.conf'.
 
-Note that a default django superuser is created during the mcweb docker image construction. This can be configured using the variables 'DJANGO_PASSWORD', 'DJANGO_USER' and 'DJANGO_EMAIL' within 'McWeb/Dockerfile'.
+Note that a default django superuser is created during the McWeb docker image construction. This can be configured using the variables 'DJANGO_PASSWORD', 'DJANGO_USER' and 'DJANGO_EMAIL' within 'McWeb/Dockerfile'.
 
 # Running the stack
 
@@ -21,7 +21,7 @@ Once these two commands have run you should see 1 docker image running with a na
 To stop the docker stack run the command:
 * docker stack rm mcweb-service
 
-Note, this may take several moments to remove the mcweb container.
+Note, this may take several moments to remove the McWeb container.
 
 # Accessing McWeb
 
@@ -33,15 +33,21 @@ You should then be taken to a start screen displaying the 'SANSsimple' instrumen
 
 # Configuring remote processing
 
-This McWeb deployment uses the python package 'corc' (https://pypi.org/project/corc/) to schedule processing on remote resources. To do so necessary configurations will need to be defined by a user. Currently this is done outside of the docker container, with the relevant configs mounted from the .aws, .corc, and.oci directories within configs-platform. Brief readmes are included in each directory explaining their role. Different configs may be mounted, though docker-compose.yaml will need to be altered accordingly.
+This McWeb deployment uses the python package 'corc' (https://pypi.org/project/corc/) to schedule processing on remote resources. To do so necessary configurations will need to be defined by a user. Currently this is done outside of the docker container, with the relevant configs mounted from the .aws, .corc, and.oci directories within configs-platform. Brief READMEs are included in each directory explaining their role. Different configs may be mounted, though docker-compose.yaml will need to be altered accordingly.
 
 # Adding instrument and component definitions
 
 To add additional instrument definitions to McWeb they can be added to the 'McWeb/bootstrap_data/instruments' directory. Note that the 'bootstrap_data' folder and its contents MUST be owned by the user 'www-data'. This is as it is used by McWeb internally, running as www-data. Any files not owned by www-data will not be added to the McWeb interface, and may crash the system.
 
-Instruments added here should be sorted into groups for ease of use. The default group is 'intro-ns'. Any new instruments or groups can be added here, along with any supporting files or components alongside the relevant instrument file. This is as this directory is mounted into the mcweb container and is the source for instrument files used to construct the McWeb interface. Note that it may take up to 10 minutes from creating a new instrument here for it to appear in McWeb.
+Instruments added here should be sorted into groups for ease of use. The default group is 'intro-ns'. Any new instruments or groups can be added here, along with any supporting files or components alongside the relevant instrument file. This is as this directory is mounted into the McWeb container and is the source for instrument files used to construct the McWeb interface. Note that it may take up to 10 minutes from creating a new instrument here for it to appear in McWeb.
 
 Do not delete the 'intro-ns' group directory, or the 'SANSsimple.instr' file within it as this is the default landing instrument for the McWeb interface.
+
+# Retrieving Data in McWeb
+
+The directory 'McWeb/bootstrap_data/simrun_data' is also mounted to the McWeb docker container. This is the directory that any output is written to by the McStas/McXtrace processing. This also means that any data produced is retained beyond the life of the docker container, and can easily be retrieved from it. 
+
+If the system has been set up using corc to schedule remote processing, it will also be available in whatever remote storage has been defined and should be manually deleted.
 
 # Additional options in McWeb
 
