@@ -61,6 +61,7 @@ class SimRun(Model):
     # meta-fields below this line
     created = DateTimeField('date created', default=timezone.now)
     started = DateTimeField('date started', blank=True, null=True)
+    processed = DateTimeField('date processed', blank=True, null=True)
     complete = DateTimeField('date complete', blank=True, null=True)
     failed = DateTimeField('date failed', blank=True, null=True)
     fail_str = CharField(max_length=1000, blank=True, null=True)

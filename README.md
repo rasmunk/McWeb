@@ -8,13 +8,16 @@ Note that a default django superuser is created during the McWeb docker image co
 
 # Running the stack
 
-To run McWeb, run the following command within the McWeb directory after updating the django admin login details:
-* docker build -f Dockerfile --no-cache --tag mcweb .
-
-This will build the 'mcweb' docker image. This can then be run using:
+To run McWeb, run the following command within the McWeb directory:
 * docker stack deploy --compose-file docker-compose.yaml mcweb-service
 
-Once these two commands have run you should see 1 docker image running with a name such as 'mcweb-service_mcweb.1.xp0dznz29ykw1b8vfg30c1whw'. Note that the exact name will differ each time the stack is deployed, and that it may take a few moments to start
+This is sufficient for testing but should not be used in deployed systems as it contains default django logins as discussed below. These should be altered in the Dockerfile and a local image should be built using the command:
+* docker build -f Dockerfile --no-cache --tag UNIQUE-IMAGE-NAME-HERE .
+
+This will build a local copy of the 'mcweb' docker image. Once 'docker-compose.yaml' has been updated with the new image name, it can then be run using:
+* docker stack deploy --compose-file docker-compose.yaml mcweb-service
+
+Once these commands have run you should see 1 docker image running with a name such as 'mcweb-service_mcweb.1.xp0dznz29ykw1b8vfg30c1whw'. Note that the exact name will differ each time the stack is deployed, and that it may take a few moments to start.
 
 # Stopping the stack
 

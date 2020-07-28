@@ -12,11 +12,8 @@ ARG DJANGO_EMAIL=admin@localhost
 ARG MPI=1
 
 # Get required commands for script
-RUN apt-get update
-
-RUN apt-get install -y adwaita-icon-theme
-
-RUN apt-get install -y git
+RUN apt-get update \
+    && apt-get install -y adwaita-icon-theme git
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
 

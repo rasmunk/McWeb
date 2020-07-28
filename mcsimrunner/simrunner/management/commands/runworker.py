@@ -676,9 +676,40 @@ def write_results(simrun):
     lin_log_html = 'lin_log_url: impl.'
     gen = McStaticDataBrowserGenerator()
     _log("setting base context")
+
+    date_time_completed = timezone.localtime(simrun.complete).strftime("%H:%M:%S, %d/%m-%Y")
+    date_time_created = timezone.localtime(simrun.created).strftime("%H:%M:%S, %d/%m-%Y")
+    date_time_started = timezone.localtime(simrun.started).strftime("%H:%M:%S, %d/%m-%Y")
+    date_time_processed = timezone.localtime(simrun.processed).strftime("%H:%M:%S, %d/%m-%Y")
+
+    total_time_taken = "(%s seconds)" % (simrun.complete - simrun.created).seconds
+    delay_time = "(%s seconds)" % (simrun.started - simrun.created).seconds
+    run_time = "(%s seconds)" % (simrun.complete - simrun.started).seconds
+    simulation_time = "(%s seconds)" % (simrun.processed - simrun.started).seconds
+
+    _log("Simrun timing data:")
+    _log("Created at: %s" % date_time_created)
+    _log("Started at: %s" % date_time_started)
+    _log("Processed at: %s" % date_time_processed)
+    _log("Completed at: %s" % date_time_completed)
+    _log("Initial delay was: %s" % delay_time)
+    _log("Ran for: %s" % run_time)
+    _log("Simultation took: %s" % simulation_time)
+    _log("Total time taken: %s" % total_time_taken)
+
     gen.set_base_context({'group_name': simrun.group_name, 'instr_displayname': simrun.instr_displayname,
-                          'date_time_completed': timezone.localtime(simrun.complete).strftime("%H:%M:%S, %d/%m-%Y"),
-                          'params': simrun.params, 'neutrons': simrun.neutrons, 'seed': simrun.seed, 'scanpoints': simrun.scanpoints,
+                          'date_time_completed': date_time_completed,
+                          'date_time_created': date_time_created,
+                          'date_time_started': date_time_started,
+                          'date_time_processed': date_time_processed,
+                          'total_time_taken': total_time_taken,
+                          'delay_time': delay_time,
+                          'run_time': run_time,
+                          'simulation_time': simulation_time,
+                          'params': simrun.params,
+                          'neutrons': simrun.neutrons,
+                          'seed': simrun.seed,
+                          'scanpoints': simrun.scanpoints,
                           'lin_log_html': lin_log_html,
                           'data_folder': simrun.data_folder})
 
@@ -710,6 +741,7 @@ def threadwork(simrun, semaphore):
             else:
                 mcrun(simrun)
 
+            simrun.processed = timezone.now()
             simrun.enable_cachefrom = True
 
             if simrun.skipvisualisation:

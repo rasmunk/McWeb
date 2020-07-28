@@ -17,7 +17,7 @@ services:
 #      - default
 
   mcweb:
-    image: nielsbohr/mcweb:latest
+    image: mcweb
     hostname: mcweb
     # If an nginx proxy is used, the port section below should be commented out.
     ports:
