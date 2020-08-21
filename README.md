@@ -11,7 +11,7 @@ Note that a default django superuser is created during the McWeb docker image co
 To run McWeb, run the following command within the McWeb directory:
 * docker stack deploy --compose-file docker-compose.yaml mcweb-service
 
-This is sufficient for testing but should not be used in deployed systems as it contains default django logins as discussed below. These should be altered in the Dockerfile and a local image should be built using the command:
+This is sufficient for testing but should not be used in deployed systems as it contains default django logins as discussed below. These should be altered in the Dockerfile. If you wish to host McWeb and have it accessible from an external IP you will need to add said IP to the ALLOWED_HOSTS list in 'McWeb/mcsimrunner/mcweb/settings.py.in'. Once any edits have been made you can build your image with the command:
 * docker build -f Dockerfile --no-cache --tag UNIQUE-IMAGE-NAME-HERE .
 
 This will build a local copy of the 'mcweb' docker image. Once 'docker-compose.yaml' has been updated with the new image name, it can then be run using:
@@ -28,7 +28,7 @@ Note, this may take several moments to remove the McWeb container.
 
 # Accessing McWeb
 
-On the host machine you can now access McWeb through an internet browser by navigating to '127.0.0.1:80', assuming you did not modify 'McWeb/nginx/nginx-proxy.conf'.
+On the host machine you can now access McWeb through an internet browser by navigating to '127.0.0.1:80', assuming you did not modify 'McWeb/nginx/nginx-proxy.conf', or 'McWeb/mcsimrunner/mcweb/settings.py.in'.
 
 If everything has hosted correctly you will be greeted with a login screen, you can login as the superuser defined in 'McWeb/Dockerfile'. By default this is 'djangoadmin' with password 'Passw0rd123'. This should obviously be changed for any deployment implementation.
 
