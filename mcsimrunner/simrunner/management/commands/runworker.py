@@ -16,6 +16,9 @@ import logging
 import re
 import traceback
 import pyparsing
+import yaml
+
+from pathlib import Path
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -371,8 +374,12 @@ def remote_mcrun(simrun):
 
     environment_vars = os.environ
     try:
-        # Setup mcstas/mcxtrace command
-        cmd_args = [simrun.instr_displayname + ".instr"]
+        cmd_args = [MCCODE]
+        cores = get_instance_cores()
+
+        cmd_args.append('--mpi=%d' % cores)
+
+        cmd_args.append(simrun.instr_displayname + ".instr")
 
         if simrun.gravity:
             cmd_args.append('-g')
@@ -391,24 +398,13 @@ def remote_mcrun(simrun):
         absolute_data_path = os.path.join(os.getcwd(), simrun.data_folder)
 
         runstr = "corc oci job run " \
-                 + MCCODE \
+                 + '\'' + ' '.join(cmd_args) + '\'' \
                  + " --storage-enable" \
                  + " --storage-upload-path " \
                  + absolute_data_path \
                  + " --job-working-dir " \
-                 + '/tmp/input' \
-                 + " --job-args " \
-                 + '\'' + ' '.join(cmd_args) + '\''
+                 + '/tmp/input'
         _log('job runstr is: %s' % runstr)
-
-        # process = subprocess.Popen('oci -h',
-        #                            stdout=subprocess.PIPE,
-        #                            stderr=subprocess.PIPE,
-        #                            shell=True,
-        #                            cwd=simrun.data_folder)
-        # (stdout, stderr) = process.communicate()
-        # _log('testing oci stdout: %s' % stdout)
-        # _log('testing oci stderr: %s' % stderr)
 
         process = subprocess.Popen(runstr,
                                    stdout=subprocess.PIPE,
@@ -497,6 +493,61 @@ def remote_mcrun(simrun):
         msg = "Problem encountered whilst running remotely. %s" % e
         _log(msg)
         raise Exception(msg)
+
+def get_instance_cores():
+    # TODO update to Python3
+    # Get cores on remote image. If McWeb is ever updated to use python3
+    # we can update this whole section to use corc python functions
+    # explictly. In the mean time this will have to do. Currently only
+    # supports oci.
+
+    try:
+        runstr = 'corc oci orchestration instance list'
+
+        process = subprocess.Popen(
+            runstr,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True)
+
+        (stdout, stderr) = process.communicate()
+
+        # Write instances to file
+        instances_filename = 'instances'
+        with open(instances_filename, 'w') as instances_file:
+            instances_file.write(stdout.decode('utf-8'))
+
+        # Get the corc config
+        corc_config_path = \
+            os.path.join(os.path.expanduser('~'), '.corc', 'config')
+
+        if not os.path.exists(corc_config_path):
+            _log('corc config missing at %s. Using default core value of 1'
+                 % corc_config_path)
+            return 1
+
+        with open(corc_config_path, "r") as corc_config_file:
+            config = yaml.safe_load(corc_config_file)
+
+        # Get the cores of the current instance matching the defined shape
+        config_shape = \
+            config['corc']['providers']['oci']['cluster']['node']['node_shape']
+
+        with open(instances_filename) as json_file:
+
+            data = json.load(json_file)
+            instances_list = data['instances']
+
+            for instance in instances_list:
+                if 'shape' in instance and instance['shape'] == config_shape:
+                    cores = int(float(instance['shape_config']['ocpus']))
+                    _log('Found %s cores' % cores)
+                    return cores
+    except Exception as exc:
+        _log('Could not find number of cores due to: %s. defaulting to 1 '
+             'core' % str(exc))
+        return 1
+
 
 def identify_run_type(simrun):
     MCCODE = MCRUN
@@ -697,6 +748,19 @@ def write_results(simrun):
     _log("Simultation took: %s" % simulation_time)
     _log("Total time taken: %s" % total_time_taken)
 
+    o = open('%s/stdout.txt' % simrun.data_folder, 'a')
+    o.write("Simrun timing data:\n")
+    o.write("Created at: %s\n" % date_time_created)
+    o.write("Started at: %s\n" % date_time_started)
+    o.write("Processed at: %s\n" % date_time_processed)
+    o.write("Completed at: %s\n" % date_time_completed)
+    o.write("Initial delay was: %s\n" % delay_time)
+    o.write("Ran for: %s\n" % run_time)
+    o.write("Simultation took: %s\n" % simulation_time)
+    o.write("Total time taken: %s\n" % total_time_taken)
+
+    o.close()
+
     gen.set_base_context({'group_name': simrun.group_name, 'instr_displayname': simrun.instr_displayname,
                           'date_time_completed': date_time_completed,
                           'date_time_created': date_time_created,
@@ -788,7 +852,6 @@ def work(threaded=True, semaphore=None):
     while simrun:
         # exceptions raised during the processing block are written to the simrun object as fail, but do not break the processing loop
         try:
-
             if simrun.scanpoints == 1:
                 _log('delegating simrun for %s...' % simrun.instr_displayname)
             else:

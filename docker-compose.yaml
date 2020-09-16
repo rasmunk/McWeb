@@ -63,8 +63,8 @@ services:
         gid: '33'
         mode: 0440
     environment:
-      - CORC_CONFIG_FILE='/var/www/.corc/config'
-      - OCI_CONFIG_FILE='/var/www/.oci/config'
+      - CORC_CONFIG_FILE=/var/www/.corc/config
+      - OCI_CONFIG_FILE=/var/www/.oci/config
 
 volumes:
   instruments:

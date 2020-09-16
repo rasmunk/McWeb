@@ -62,7 +62,7 @@ RUN sudo chown -R www-data:www-data /srv/mcweb /var/www/
 RUN cd /srv/mcweb \
     && sudo -H -u www-data virtualenv mcvenv \
     && sudo -u www-data cp mcvenv/bin/activate mcvenv_finishup \
-    && echo pip install -I pyparsing ply numpy >> mcvenv_finishup \
+    && echo pip install -I pyparsing ply numpy pathlib PyYaml >> mcvenv_finishup \
     && echo pip install -I Django==1.8.2 django-auth-ldap==1.2.7 simplejson python-ldap >> mcvenv_finishup \
     && echo pip install uwsgi >> mcvenv_finishup \
     && sudo -H -u www-data bash mcvenv_finishup
@@ -137,7 +137,7 @@ RUN cat /srv/mcweb/McWeb/scripts/nginx-default > /etc/nginx/sites-enabled/defaul
 COPY scripts/docker-entry.sh /srv/mcweb/McWeb/scripts/docker-entry.sh
 
 # Used for development. Can be removed from finished project
-RUN apt-get -y install locate nano iputils-ping dnsutils \
+RUN apt-get -y install locate nano \
     && updatedb
 
 EXPOSE 80 443
